@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  car_mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root-pw
+      MYSQL_DATABASE: car_hire
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root-pw
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin_container
+    restart: always
+    environment:
+      PMA_HOST: car_mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root-pw
+    ports:
+      - "8080:80" 
+
+  car_redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  car_couchdb:
+    image: couchdb:latest
+    environment:
+      COUCHDB_USER: couchdb
+      COUCHDB_PASSWORD: coconut
+    ports:
+      - "5984:5984"
