@@ -1,23 +1,21 @@
-from typing import Optional, Dict
-import copy
 from datetime import datetime
+from typing import Dict
 
 
 class BaseInfo:
-    def __init__(self, id: int, firstName: str | None = None,
-                 lastName: str | None = None, birthDate: datetime | None = None) -> None:
+    def __init__(self, id: int, firstName: str = None, lastName: str = None, birthDate: datetime = None) -> None:
         """
         Initializes the BaseInfo object with optional parameters.
 
         Args:
             id (int): The user ID.
-            firstName (str | None): First name of the user.
-            lastName (str | None): Last name of the user.
-            birthDate (datetime | None): Birthdate of the user.
+            firstName (str): First name of the user.
+            lastName (str): Last name of the user.
+            birthDate (datetime): Birthdate of the user.
 
         Note:
-            If `firstName`, `lastName` and `birthDate` aren't provided, they will be loaded from the database automatically.
-            In other case, they will be added to database automatically.
+            If `firstName`, `lastName`, and `birthDate` aren't provided, they will be loaded from the database automatically.
+            Otherwise, they will be added to the database automatically.
         """
         self.id: int = id
         self.firstName: str | None = firstName
@@ -109,12 +107,12 @@ class Credential:
 
 
 class PrivateInfo:
-    def __init__(self, id: int | None = None, privateInfo: Dict[str, str | None] = None) -> None:
+    def __init__(self, id: int = None, privateInfo: Dict[str, str | None] = None) -> None:
         """
         Initializes the PrivateInfo object with a user ID.
 
         Args:
-            id (int): User ID. If not provided, upload given privateInfo to database by method `upload_private_info`
+            id (int): User ID. If not provided, upload given privateInfo to the database by method `upload_private_info`
             and get id for new user
         """
         self.id: int = id
@@ -129,12 +127,12 @@ class PrivateInfo:
             Dict[str, str | None]: Dictionary containing private information.
         """
         info: Dict[str, str | None] = None
-        return copy.deepcopy(info)
+        return info.copy() if info else {}
 
     def upload_private_info(self, args: Dict[str, str | None]) -> int:
         """
         Uploads private information of the user to the database.
-        if self.id isn't specified, gets it from database
+        if self.id isn't specified, gets it from the database
 
         Args:
             args (Dict[str, str | None]): Dictionary containing private information.
@@ -144,18 +142,16 @@ class PrivateInfo:
         """
         # Placeholder for actual implementation
         # if self.id is None (new user), get a new id
-        del args
         return self.id
 
 
 class User:
-    def __init__(self, id: int | None = None) -> None:
+    def __init__(self, id: int = None) -> None:
         """
         Initializes the User object with optional parameters.
 
         Args:
-            id (int | None): User ID. Can be an integer if the ID is already known,
-                            or None if it is unknown (next action must be `enter_system`).
+            id (int | None): User ID.
         """
         self.id: int | None = id
         self.baseInfo: BaseInfo | None = None
@@ -163,21 +159,6 @@ class User:
         self.privateInfo: PrivateInfo | None = None
         self.load_private_info()
         self.creds: Credential | None = None
-
-    def enter_system(self, login: str, password: str) -> None:
-        """
-        Enters the system by validating user credentials and loads information.
-
-        Args:
-            login (str): User login.
-            password (str): Entered password.
-        """
-        self.creds = Credential(login, password)
-        id: int | None = self.creds.get_id()
-        if id is not None:
-            self.id = id
-            self.load_private_info()
-            self.load_base_info()
 
     def load_private_info(self) -> None:
         """
@@ -219,7 +200,6 @@ class User:
             new_info (Dict[str, str | None]): Dictionary containing new private information.
         """
         self.privateInfo.upload_private_info(new_info)
-        del new_info
 
     def change_credentials(self, new_info: Dict[str, str]) -> None:
         """
@@ -233,25 +213,25 @@ class User:
 
 
 class Renter(User):
-    def __init__(self) -> None:
+    def __init__(self, id: int = None) -> None:
         """
         Initializes the Renter object with additional attributes.
+
+        Args:
+            id (int): Renter id
         """
-        super().__init__()
+        super().__init__(id)
         self.registrationDate: datetime | None = None
         self.driverLicenseDate: datetime | None = None
         self.canRent: bool = True
 
-    def enter_system_as_renter(self, login: str, password: str) -> None:
+    def load_from_database(self) -> None:
         """
-        Enters the system as a renter and loads additional information.
-
-        Args:
-            login (str): Renter login.
-            password (str): Renter password.
+            Loads renter's information from the database.
         """
-        self.enter_system(login, password)
-        # Placeholder for actual implementation
+        if self.id is not None:
+            # Load from database: registrationDate, driverLicenseDate, canRent
+            pass
 
     def register(self, args: Dict[str, str]) -> None:
         """
@@ -303,22 +283,50 @@ class Renter(User):
 
 
 class CompanyWorker(User):
-    def __init__(self) -> None:
+    def __init__(self, id: int) -> None:
         """
         Initializes the CompanyWorker object.
         """
-        super().__init__()
+        super().__init__(id)
         self.position: str | None = None
         self.isActive: bool | None = None
+        self.load_info()
 
-    def enter_system_as_worker(self, login: str, password: str) -> None:
+    def load_info(self):
         """
-        Enters the system as a company worker and loads additional information.
+            Loads worker's information from the database.
+        """
+        if self.id is not None:
+            # Load from database: position and isActive
+            pass
+
+
+class LogIn:
+    def __init__(self, login: str, password: str) -> None:
+        """
+        Enters the system by validating user credentials and loads information.
 
         Args:
-            login (str): Worker login.
-            password (str): Worker password.
+            login (str): User login.
+            password (str): Entered password.
         """
-        self.enter_system(login, password)
-        # Placeholder for actual implementation
-        # Retrieve position, isActive from the companyWorker table based on id
+        self.creds: Credential = Credential(login, password)
+        id: int | None = self.creds.get_id()
+        if id is not None:
+            # Determine the user type - client or employee
+            if True:  # For now, all are clients
+                self.user: User = Renter(id)
+            else:
+                self.user: User = CompanyWorker(id)
+
+
+class Registration:
+    def __init__(self, args: Dict[str, str]) -> None:
+        """
+        Initializes the Registration object with user information.
+
+        Args:
+            args (Dict[str, str]): Dictionary containing information for registration.
+        """
+        self.user: Renter = Renter()
+        self.user.register(args)
