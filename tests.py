@@ -343,8 +343,8 @@ class TestLogIn(unittest.TestCase):
 
     def test_unsuccessful_login(self):
         # Симулюємо невдалий логін
-        self.login_instance.creds.get_id = lambda: None  # Симулюємо невдалий логін
-        self.assertIsNone(self.login_instance.user)  # Перевіряємо, що користувач не залогінений
+        new_login_instance = LogIn(self.invalid_login, self.invalid_password)
+        self.assertNotIn('user', dir(new_login_instance))  # Перевіряємо, що користувач не залогінений
 
 
 class TestRegistration(unittest.TestCase):

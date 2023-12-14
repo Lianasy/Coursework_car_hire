@@ -114,7 +114,7 @@ class Credential:
             str: User's password.
         """
         # Placeholder for actual implementation
-        pass
+        return 'test_password'
 
     def __to_valid_password(self) -> bool:
         """
@@ -455,8 +455,10 @@ class LogIn:
             password (str): Entered password.
         """
         self.creds: Credential = Credential(login, password)
+        self.successful = False
         id: int | None = self.creds.get_id()
         if id is not None:
+            self.successful = True
             # Determine the user type - client or employee
             if True:  # For now, all are clients
                 self.user: Renter = Renter(id)
@@ -464,6 +466,7 @@ class LogIn:
             else:
                 self.user: CompanyWorker = CompanyWorker(id)
                 self.user.load_from_database()
+
 
 
 class Registration:
@@ -475,9 +478,11 @@ class Registration:
             args (Dict[str, str]): Dictionary containing information for registration.
         """
         self.user: Renter = Renter()
+        self.successful = False
         try:
             if not self.user.register(args):
                 del self.user
                 raise Exception
+            self.successful = True
         except Exception as err:
             print(f'Can`t register.')

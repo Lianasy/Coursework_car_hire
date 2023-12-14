@@ -5,6 +5,10 @@ import re
 
 from UserInterface import *  # Import the UserInterface class from UserInterface module
 from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and button configurations
+
+from Users import LogIn, Registration
+
+
 class LoggingInterface:
     def __init__(self, root, config):
         """
@@ -45,6 +49,7 @@ class LoggingInterface:
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")  # Set window size
         self.root.configure(bg=config['background_color'])  # Set background color
         self.logging_user()
+
     def clear_interface(self):
         """
         Clear all widgets (buttons, labels, etc.) from the root window.
@@ -113,7 +118,8 @@ class LoggingInterface:
             height=self.btn_height,
             bg=DEFAULT_COLORS['button_color_2']
         )
-        btn_register.place(relx=self.button_config['sign_up_button']['relx'], rely=self.button_config['sign_up_button']['rely'], anchor=tk.CENTER)
+        btn_register.place(relx=self.button_config['sign_up_button']['relx'],
+                           rely=self.button_config['sign_up_button']['rely'], anchor=tk.CENTER)
 
     def login_account(self):
         """
@@ -123,9 +129,6 @@ class LoggingInterface:
         self.clear_interface()
 
         # Функція для валідації введеного значення
-
-
-
 
     def create_account(self):
         """
@@ -140,14 +143,16 @@ class LoggingInterface:
             text="Enter new login",
             bg=DEFAULT_COLORS['background_color']
         )
-        lbl_login.place(relx=self.button_config['reg_login_label']['relx'], rely=self.button_config['reg_login_label']['rely'], anchor=tk.W)
+        lbl_login.place(relx=self.button_config['reg_login_label']['relx'],
+                        rely=self.button_config['reg_login_label']['rely'], anchor=tk.W)
 
         # Create entry field for new login
         self.entry_login = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
-        self.entry_login.place(relx=self.button_config['reg_login_entry']['relx'], rely=self.button_config['reg_login_entry']['rely'], anchor=tk.W)
+        self.entry_login.place(relx=self.button_config['reg_login_entry']['relx'],
+                               rely=self.button_config['reg_login_entry']['rely'], anchor=tk.W)
 
         # Create 'Enter new password' label
         lbl_password = tk.Label(
@@ -155,7 +160,8 @@ class LoggingInterface:
             text="Enter new password",
             bg=DEFAULT_COLORS['background_color']
         )
-        lbl_password.place(relx=self.button_config['reg_password_label']['relx'], rely=self.button_config['reg_password_label']['rely'], anchor=tk.W)
+        lbl_password.place(relx=self.button_config['reg_password_label']['relx'],
+                           rely=self.button_config['reg_password_label']['rely'], anchor=tk.W)
 
         # Create entry field for new password
         self.entry_password = tk.Entry(
@@ -163,7 +169,8 @@ class LoggingInterface:
             width=int(self.btn_width * 1.5),
             show="*"
         )
-        self.entry_password.place(relx=self.button_config['reg_password_entry']['relx'], rely=self.button_config['reg_password_entry']['rely'], anchor=tk.W)
+        self.entry_password.place(relx=self.button_config['reg_password_entry']['relx'],
+                                  rely=self.button_config['reg_password_entry']['rely'], anchor=tk.W)
 
         ############################################
         lbl_fname = tk.Label(
@@ -171,13 +178,15 @@ class LoggingInterface:
             text="Enter your first name",
             bg=DEFAULT_COLORS['background_color']
         )
-        lbl_fname.place(relx=self.button_config['reg_firstname_label']['relx'], rely=self.button_config['reg_firstname_label']['rely'], anchor=tk.W)
+        lbl_fname.place(relx=self.button_config['reg_firstname_label']['relx'],
+                        rely=self.button_config['reg_firstname_label']['rely'], anchor=tk.W)
 
         self.entry_name = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
-        self.entry_name.place(relx=self.button_config['reg_firstname_entry']['relx'], rely=self.button_config['reg_firstname_entry']['rely'], anchor=tk.W)
+        self.entry_name.place(relx=self.button_config['reg_firstname_entry']['relx'],
+                              rely=self.button_config['reg_firstname_entry']['rely'], anchor=tk.W)
         ############################################
         ############################################
         lbl_lname = tk.Label(
@@ -186,14 +195,14 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_lname.place(relx=self.button_config['reg_lastname_label']['relx'],
-                       rely=self.button_config['reg_lastname_label']['rely'], anchor=tk.W)
+                        rely=self.button_config['reg_lastname_label']['rely'], anchor=tk.W)
 
         self.entry_lname = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
         self.entry_lname.place(relx=self.button_config['reg_lastname_entry']['relx'],
-                              rely=self.button_config['reg_lastname_entry']['rely'], anchor=tk.W)
+                               rely=self.button_config['reg_lastname_entry']['rely'], anchor=tk.W)
         ############################################
         lbl_birth_date = tk.Label(
             self.root,
@@ -201,7 +210,7 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_birth_date.place(relx=self.button_config['reg_birth_date_label']['relx'],
-                        rely=self.button_config['reg_birth_date_label']['rely'], anchor=tk.W)
+                             rely=self.button_config['reg_birth_date_label']['rely'], anchor=tk.W)
 
         self.entry_birth_date = tkcalendar.DateEntry(
             self.root,
@@ -209,7 +218,7 @@ class LoggingInterface:
             date_pattern='yyyy-mm-dd'
         )
         self.entry_birth_date.place(relx=self.button_config['reg_birth_date_entry']['relx'],
-                              rely=self.button_config['reg_birth_date_entry']['rely'], anchor=tk.W)
+                                    rely=self.button_config['reg_birth_date_entry']['rely'], anchor=tk.W)
         ############################################
         lbl_photo = tk.Label(
             self.root,
@@ -224,7 +233,7 @@ class LoggingInterface:
             width=int(self.btn_width * 1.5)
         )
         self.entry_photo.place(relx=self.button_config['reg_photo_entry']['relx'],
-                              rely=self.button_config['reg_photo_entry']['rely'], anchor=tk.W)
+                               rely=self.button_config['reg_photo_entry']['rely'], anchor=tk.W)
         ############################################
         ############################################
         lbl_passport = tk.Label(
@@ -233,14 +242,14 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_passport.place(relx=self.button_config['reg_passport_number_label']['relx'],
-                        rely=self.button_config['reg_passport_number_label']['rely'], anchor=tk.W)
+                           rely=self.button_config['reg_passport_number_label']['rely'], anchor=tk.W)
 
         self.entry_passport = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
         self.entry_passport.place(relx=self.button_config['reg_passport_number_entry']['relx'],
-                              rely=self.button_config['reg_passport_number_entry']['rely'], anchor=tk.W)
+                                  rely=self.button_config['reg_passport_number_entry']['rely'], anchor=tk.W)
         ############################################
         ############################################
         lbl_phone = tk.Label(
@@ -249,14 +258,14 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_phone.place(relx=self.button_config['reg_phone_number_label']['relx'],
-                           rely=self.button_config['reg_phone_number_entry']['rely'], anchor=tk.W)
+                        rely=self.button_config['reg_phone_number_entry']['rely'], anchor=tk.W)
 
         self.entry_phone = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
         self.entry_phone.place(relx=self.button_config['reg_phone_number_entry']['relx'],
-                                  rely=self.button_config['reg_phone_number_entry']['rely'], anchor=tk.W)
+                               rely=self.button_config['reg_phone_number_entry']['rely'], anchor=tk.W)
         ############################################
         ############################################
         lbl_licence = tk.Label(
@@ -265,14 +274,14 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_licence.place(relx=self.button_config['reg_licence_number_label']['relx'],
-                        rely=self.button_config['reg_licence_number_label']['rely'], anchor=tk.W)
+                          rely=self.button_config['reg_licence_number_label']['rely'], anchor=tk.W)
 
         self.entry_licence = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
         self.entry_licence.place(relx=self.button_config['reg_licence_number_entry']['relx'],
-                               rely=self.button_config['reg_licence_number_entry']['rely'], anchor=tk.W)
+                                 rely=self.button_config['reg_licence_number_entry']['rely'], anchor=tk.W)
         ############################################
         ############################################
         lbl_email = tk.Label(
@@ -281,17 +290,15 @@ class LoggingInterface:
             bg=DEFAULT_COLORS['background_color']
         )
         lbl_email.place(relx=self.button_config['reg_email_label']['relx'],
-                          rely=self.button_config['reg_email_label']['rely'], anchor=tk.W)
+                        rely=self.button_config['reg_email_label']['rely'], anchor=tk.W)
 
         self.entry_email = tk.Entry(
             self.root,
             width=int(self.btn_width * 1.5)
         )
         self.entry_email.place(relx=self.button_config['reg_email_entry']['relx'],
-                                 rely=self.button_config['reg_email_entry']['rely'], anchor=tk.W)
+                               rely=self.button_config['reg_email_entry']['rely'], anchor=tk.W)
         ############################################
-
-
 
         # Create 'Sign Up' button
         btn_create = tk.Button(
@@ -302,7 +309,8 @@ class LoggingInterface:
             height=self.btn_height,
             bg=DEFAULT_COLORS['button_color_2']
         )
-        btn_create.place(relx=self.button_config['register_button']['relx'], rely=self.button_config['register_button']['rely'], anchor=tk.CENTER)
+        btn_create.place(relx=self.button_config['register_button']['relx'],
+                         rely=self.button_config['register_button']['rely'], anchor=tk.CENTER)
 
     def check_data(self):
         self.reset_fields()
@@ -387,8 +395,14 @@ class LoggingInterface:
         """
         login = self.entry_login.get()
         password = self.entry_password.get()
-        print(f"Logging in with Login: {login}, Password: {password}")
-        self.show_user_interface(login, password)
+        user_logging = LogIn(login, password)
+        if user_logging.successful:
+            print(f"Logging in with Login: {login}, Password: {password}")
+            # далі треба створити RenterController(user_logging.user) чи ManagerController(user_logging.user)
+            self.show_user_interface(login, password)
+        else:
+            print('Logging isn`t successful')
+            # якийсь екранчик
 
     def show_user_interface(self, login, password):
         """
@@ -424,6 +438,3 @@ class LoggingInterface:
             print(f"Login: {login}, Password: {password}")
         else:
             print("Login and password fields are not created")
-
-
-
