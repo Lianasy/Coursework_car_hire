@@ -284,38 +284,50 @@ class User:
         else:
             self.baseInfo = None
 
-    def change_base_info(self, new_info: Dict[str, str | None]) -> None:
+    def change_base_info(self, new_info: Dict[str, str | None]) -> bool:
         """
         Changes user's base information and updates it in the database.
 
         Args:
             new_info (Dict[str, str | None]): Dictionary containing new base information
                                                in format {'firstName': str, 'lastName': str, 'birthDate': datetime}.
+
+        Returns:
+            bool: True if uploading is successful
         """
         # Placeholder for actual implementation
         self.baseInfo.firstName = new_info['firstName']
         self.baseInfo.lastName = new_info['lastName']
         self.baseInfo.birthDate = new_info['birthDate']
-        self.baseInfo.upload_to_database_existing()
+        return self.baseInfo.upload_to_database_existing()
 
-    def change_private_info(self, new_info: Dict[str, str | None]) -> None:
+    def change_private_info(self, new_info: Dict[str, str | None]) -> bool:
         """
         Changes user's private information and updates it in the database.
 
         Args:
             new_info (Dict[str, str | None]): Dictionary containing new private information.
-        """
-        self.privateInfo.upload_to_database_existing(new_info)
 
-    def change_credentials(self, new_info: Dict[str, str]) -> None:
+        Returns:
+            bool: True if uploading is successful
+        """
+        return self.privateInfo.upload_to_database_existing(new_info)
+
+    def change_credentials(self, new_info: Dict[str, str]) -> bool:
         """
         Changes user's credentials (login and password) and updates them in the database.
 
         Args:
             new_info (Dict[str, str]): Dictionary containing new credentials.
+
+        Returns:
+            bool: True if changing both login and password is successful
         """
-        self.creds.update_password(new_info['password'])
-        self.creds.update_login(new_info['login'])
+        result_login = self.creds.update_login(new_info['login'])
+        if result_login:
+            result_password = self.creds.update_password(new_info['password'])
+            return result_password
+        return False
 
 
 class Renter(User):
@@ -387,7 +399,7 @@ class Renter(User):
         """
         return datetime.now().date() - self.driverLicenseDate
 
-    def count_time_in_system(self) -> datetime:
+    def count_time_in_system(self) -> int:
         """
         Calculates the time spent in the system based on the current date and registration date.
 

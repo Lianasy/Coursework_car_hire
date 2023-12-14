@@ -47,11 +47,6 @@ class Car:
             rentStatus (bool | None): Rental status of the car.
             carType (str | None): Type or category of the car.
             documents (list[CarDocument] | None): List of documents associated with the car.
-
-        Note:
-            If `carNumber`, `carModel`, `rentPrice`, `rentStatus`, `carType`, and `documents` are not provided,
-            they will be loaded from the database automatically.
-            Otherwise, if provided, they will be uploaded to the database automatically.
         """
         self.carId: int = carId
         self.carNumber: str | None = carNumber
@@ -60,12 +55,6 @@ class Car:
         self.rentStatus: bool | None = rentStatus
         self.carType: str | None = carType
         self.documents: list[CarDocument] | None = documents
-
-        if carNumber is None and carModel is None and rentPrice is None \
-                and rentStatus is None and carType is None and documents is None:
-            self.load_car_info()
-        else:
-            self.upload_car_info()
 
     def upload_car_info(self) -> None:
         """
@@ -90,7 +79,7 @@ class Car:
         """
         return self.carId
 
-    def set_rent_status(self, new_rent_status: bool) -> None:
+    def set_rent_status(self, new_rent_status: str) -> None:
         """
         Sets the rental status of the car.
 

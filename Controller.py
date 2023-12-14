@@ -1,14 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from CarDomain import Car
-from Users import Renter
+from Users import Renter, CompanyWorker
 from typing import Dict
 
 
 class Rent:
     def __init__(self, rent_id: int | None = None, user_id: int | None = None, car_id: int | None = None,
-                 car_price: float | None = None, discount: int | None = None, deposit: float | None = None,
-                 days_for_rent: int | None = None, agreement: str | None = None,
-                 agreement_description: str | None = None) -> None:
+                 price: float | None = None, discount: int | None = None, deposit: float | None = None,
+                 start_time: datetime | None = datetime.now().date(), end_time: datetime | None = datetime.now().date(),
+                 agreement: str | None = None, agreement_description: str | None = None,
+                 isRentFinished: bool | None = False) -> None:
         """
         Initializes the Rent object with optional parameters.
 
@@ -30,18 +31,14 @@ class Rent:
         self.rent_id: int | None = rent_id
         self.user_id: int | None = user_id
         self.car_id: int | None = car_id
-        self.price: float | None = car_price * days_for_rent
+        self.price: float | None = price
         self.discount: int | None = discount
         self.deposit: float | None = deposit
-        self.start_time: datetime = datetime.now().date()
-        self.end_time: datetime = self.start_time + days_for_rent
-        if rent_id is None:
-            self.agreement: str = self.generate_agreement()
-            self.agreement_description: str = self.generate_agreement_description()
-        else:
-            self.agreement: str = agreement
-            self.agreement_description: str = agreement_description
-        self.isRentFinished: bool = False
+        self.start_time: datetime = start_time
+        self.end_time: datetime = end_time
+        self.agreement: str | None = agreement
+        self.agreement_description: str | None = agreement_description
+        self.isRentFinished: bool = isRentFinished
 
     def generate_agreement(self) -> str:
         """
@@ -63,9 +60,19 @@ class Rent:
         # Placeholder for actual implementation
         pass
 
-    def upload_rent(self) -> None:
+    def upload_to_database_new(self) -> None:
         """
-        Uploads rent details to the database.
+        Uploads new rent details to the database.
+        """
+        # Placeholder for actual implementation
+        id = None  # get new id
+        if id is not None:
+            self.id = id
+        pass
+
+    def upload_to_database_existing(self) -> None:
+        """
+        Uploads existing rent details to the database.
         """
         # Placeholder for actual implementation
         pass
@@ -91,24 +98,23 @@ class Rent:
 
 
 class RenterController:
-    def __init__(self) -> None:
+    def __init__(self, renter: Renter) -> None:
         """
         Initializes the RenterController object.
 
+        Args:
+            renter (Renter): Renter from LogIn.user or Registration.user
         """
-        self.driver_id: int | None = id
+        self.renter: Renter = renter
 
-
-    def calculate_discount(self, time_in_system: datetime) -> int:
+    def calculate_discount(self) -> int:
         """
         Calculates the discount based on the time a user has spent in the system.
-
-        Args:
-            time_in_system (datetime): Time in the system (duration).
 
         Returns:
             int: Discount percentage.
         """
+        time_in_system = self.renter.count_time_in_system()
         if time_in_system >= 365:
             return 10
         elif time_in_system >= 180:
@@ -120,12 +126,9 @@ class RenterController:
         else:
             return 0
 
-    def calculate_deposit(self, driver: Renter) -> float:
+    def calculate_deposit(self) -> float:
         """
         Calculates the deposit amount based on user information.
-
-        Args:
-            driver (Renter): User (Renter) object.
 
         Returns:
             float: Deposit amount.
@@ -143,42 +146,43 @@ class RenterController:
         # Placeholder for actual implementation
         pass
 
-    def rent_car(self, user: Renter, car: Car, days_for_rent: int) -> None:
+    def rent_car(self, car: Car, days_for_rent: int) -> None:
         """
         Rents a car for a specified number of days and updates the database.
 
         Args:
-            user (Renter): User (Renter) object.
             car (Car): Car object to be rented.
             days_for_rent (int): Number of days for the rent.
         """
-        rent = Rent(user_id=user.id, car_id=car.id, car_price=car.rentPrice,
-                    discount=self.calculate_discount(user.count_time_in_system()),
-                    deposit=self.calculate_deposit(user), days_for_rent=days_for_rent)
-        rent.upload_rent()
-        car.setRentStatus('IN_RENT')
-        user.set_rent_ability(False)
+        rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
+                    discount=self.calculate_discount(), deposit=self.calculate_deposit(), start_time=datetime.now().date(),
+                    end_time=datetime.now().date() + timedelta(days=days_for_rent))
+        rent.generate_agreement()
+        rent.generate_agreement_description()
+        rent.upload_to_database_new()
+        car.set_rent_status('IN_RENT')
+        self.renter.set_rent_ability(False)
 
 
 class ManagerController:
-    def __init__(self, id: int) -> None:
+    def __init__(self, manager: CompanyWorker) -> None:
         """
         Initializes the ManagerController object.
 
         Args:
-            id (int): User ID associated with the controller.
+            manager (CompanyWorker): Manager object from LogIn.user.
         """
-        self.manager_id: int = id
+        self.manager: CompanyWorker = manager
 
-    def end_rent(self, rent_id: int) -> None:
+    def end_rent(self, rent: Rent) -> None:
         """
         Ends the specified rent and updates the database.
 
         Args:
-            rent_id (int): Rent ID to be ended.
+            rent (Rent): Rent to be ended
         """
-        rent = Rent(rent_id)
         rent.set_rent_finished()
+        rent.upload_to_database_existing()
 
     def change_user_info(self, user: Renter, new_info: Dict[str, str]) -> None:
         """
@@ -188,44 +192,48 @@ class ManagerController:
             user (User): User object.
             new_info (Dict[str, str]): Dictionary containing new user information.
         """
-        user.change_base_info(new_info)
+        try:
+            if not user.change_base_info(new_info):
+                raise Exception
+        except Exception as e:
+            print('Changing user info failed')
 
-    def get_users(self) -> list:
+    def get_users(self) -> list[Renter]:
         """
         Retrieves a list of users from the User table in the database.
 
         Returns:
-            list: List of users.
+            list[Renter]: List of users.
         """
         # Placeholder for actual implementation
         pass
 
-    def get_cars(self) -> list:
+    def get_cars(self) -> list[Car]:
         """
         Retrieves a list of cars from the Car table in the database.
 
         Returns:
-            list: List of cars.
+            list[Car]: List of cars.
         """
         # Placeholder for actual implementation
         pass
 
-    def get_rented_cars(self) -> list:
+    def get_rented_cars(self) -> list[Car]:
         """
         Retrieves a list of rented cars from the Rent table in the database.
 
         Returns:
-            list: List of rented cars.
+            list[Car]: List of rented cars.
         """
         # Placeholder for actual implementation
         pass
 
-    def get_expired_rents(self) -> list:
+    def get_expired_rents(self) -> list[Rent]:
         """
         Retrieves a list of expired rents from the Rent table in the database.
 
         Returns:
-            list: List of expired rents.
+            list[Rent]: List of expired rents.
         """
         # Placeholder for actual implementation
         pass
