@@ -5,10 +5,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root-pw
       MYSQL_DATABASE: car_hire
-      MYSQL_USER: root
+      MYSQL_ROOT_USER: root
       MYSQL_PASSWORD: root-pw
     ports:
       - "3306:3306"
+    volumes:
+      - my-db:/var/lib/mysql
+    networks:
+      - my-network
+
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -19,12 +24,19 @@ services:
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: root-pw
     ports:
-      - "8080:80" 
+      - "8080:80"
+    networks:
+      - my-network
 
   car_redis:
     image: redis:latest
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - my-network
+
 
   car_couchdb:
     image: couchdb:latest
@@ -33,3 +45,19 @@ services:
       COUCHDB_PASSWORD: coconut
     ports:
       - "5984:5984"
+    volumes:
+      - ./dbdata:/opt/couchdb/data
+    networks:
+      - my-network
+
+
+volumes:
+  redis_data:
+  my-db:
+
+
+networks:
+  my-network:
+    external: true
+    name: my-network
+

@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Dict
+from Connect import connection
 
 
 class BaseInfo:
@@ -26,8 +27,11 @@ class BaseInfo:
             bool: True if the upload was successful, False otherwise.
         """
         try:
-            # Placeholder for actual implementation
-            # тут має бути INSERT
+            cursor = connection.mysql_connection.cursor()
+            insert_query = "INSERT INTO baseUserInfo (userId, firstName, lastName, birthDate) VALUES (%s, %s, %s, %s)"
+            user_data = (self.id, self.firstName, self.lastName, self.birthDate)
+            cursor.execute(insert_query, user_data)
+            connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо True
             return True
         except Exception as e:
@@ -205,7 +209,9 @@ class PrivateInfo:
         # Placeholder for actual implementation
         return info.copy() if info else {}
 
-    def upload_to_database_new(self, args: Dict[str, str | None]) -> int:
+    #def upload_to_database_new(self, args: Dict[str, str | None]) -> int:
+    def upload_to_database_new(self) -> int:
+
         """
         Uploads private information of the user to the database for new user.
 
@@ -216,8 +222,11 @@ class PrivateInfo:
             int: User id
         """
         try:
-            # Placeholder for actual implementation
-            # тут має бути INSERT
+            cursor = connection.mysql_connection.cursor()
+            insert_query = "INSERT INTO privateInfo (userId) VALUES (%s)"
+            user_data = (self.id)
+            cursor.execute(insert_query, user_data)
+            connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо id
             id = None  # get new id
             if id is None:
@@ -486,3 +495,10 @@ class Registration:
             self.successful = True
         except Exception as err:
             print(f'Can`t register.')
+
+
+private = PrivateInfo(4)
+private.upload_to_database_new()
+user_birthdate = datetime(1990, 5, 15)
+base = BaseInfo(4, "Test", "Name", user_birthdate)
+base.upload_to_database_new()
