@@ -19,13 +19,13 @@ class CarHireApp:
         self.create_profile_button()
         self.create_logout_button()
 
-    def create_profile_button(self):
-        profile_button = tk.Button(self.root, text="My Profile", command=self.open_profile)
-        profile_button.place(relx=1, rely=0, anchor=tk.NE, x=-55, y=20)
-
     def create_logout_button(self):
         logout_button = tk.Button(self.root, text="Log out", command=self.log_out)
-        logout_button.place(relx=1, rely=0, anchor=tk.NE, x=-145, y=20)
+        logout_button.place(relx=1, rely=0, anchor=tk.NE, x=-55, y=20)
+
+    def create_profile_button(self):
+        profile_button= tk.Button(self.root, text="My Profile", command=self.open_profile)
+        profile_button.place(relx=1, rely=0, anchor=tk.NE, x=-145, y=20)
 
     def open_profile(self):
         # Логика открытия профиля
