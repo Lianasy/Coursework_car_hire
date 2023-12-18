@@ -133,7 +133,7 @@ class RenterController:
         Returns:
             float: Deposit amount.
         """
-        # Placeholder for actual implementation
+
         pass
 
     def get_available_cars(self) -> list[Car]:
@@ -161,7 +161,9 @@ class RenterController:
         rent.generate_agreement_description()
         rent.upload_to_database_new()
         car.set_rent_status('IN_RENT')
+        car.upload_car_info()
         self.renter.set_rent_ability(False)
+
 
 
 class ManagerController:

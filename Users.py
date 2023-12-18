@@ -209,8 +209,7 @@ class PrivateInfo:
         # Placeholder for actual implementation
         return info.copy() if info else {}
 
-    #def upload_to_database_new(self, args: Dict[str, str | None]) -> int:
-    def upload_to_database_new(self) -> int:
+    def upload_to_database_new(self, args: Dict[str, str | None]) -> int:
 
         """
         Uploads private information of the user to the database for new user.

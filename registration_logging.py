@@ -399,7 +399,11 @@ class LoggingInterface:
         if user_logging.successful:
             print(f"Logging in with Login: {login}, Password: {password}")
             # далі треба створити RenterController(user_logging.user) чи ManagerController(user_logging.user)
-            self.show_user_interface(login, password)
+            if ???:
+                controller = RenterController(user_logging.user)
+                self.show_user_interface(controller)
+            else:
+                controller = ManagerController(user_logging.user)
         else:
             print('Logging isn`t successful')
             # якийсь екранчик
