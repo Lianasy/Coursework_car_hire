@@ -484,12 +484,32 @@ class Renter(User):
         """
         return datetime.now().date() - self.registrationDate
 
-    def get_agreements(self) -> None:
+    def get_agreements(self):
         """
         Retrieves agreements from the Agreement document based on the user ID.
         """
-        # Placeholder for actual implementation
-        pass
+        try:
+            db = connection.couchdb_connection['car_hire']
+            agreements_with_locations = {}
+
+            query = {
+                "selector": {
+                    "userId": self.id
+                },
+                "fields": ["documentName", "documentLocation"]
+            }
+            result = db.find(query)
+
+            for row in result:
+                document_name = row.get('documentName')
+                document_location = row.get('documentLocation')
+                agreements_with_locations[document_name] = document_location
+
+            return agreements_with_locations
+
+        except Exception as e:
+            print(f'Failed to retrieve agreements from the database. Error: {e}')
+            return {}
 
     def set_rent_ability(self, val: bool) -> None:
         """
