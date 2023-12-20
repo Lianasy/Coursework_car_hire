@@ -163,10 +163,10 @@ class Car:
 
 
 carDoc = CarDocument(4)
-#carDoc.get_document_location("CertifOfRegistrCar5")
-car = Car(3)
-car.load_car_info()
-print(car.carNumber)
-car1 = Car(10, "AA5011AA", "Nissan Micro", 200, True, "ECONOMY")
-car1.upload_car_info()
-print(car1.carModel + car1.carNumber)
+carDoc.get_document_location("CertifOfRegistrCar5")
+#car = Car(3)
+#car.load_car_info()
+#print(car.carNumber)
+#car1 = Car(10, "AA5011AA", "Nissan Micro", 200, True, "ECONOMY")
+#car1.upload_car_info()
+#print(car1.carModel + car1.carNumber)

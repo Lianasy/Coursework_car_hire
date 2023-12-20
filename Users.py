@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict
 from Connect import connection
+import json
 
 
 class BaseInfo:
@@ -31,7 +32,7 @@ class BaseInfo:
             insert_query = "INSERT INTO baseUserInfo (userId, firstName, lastName, birthDate) VALUES (%s, %s, %s, %s)"
             user_data = (self.id, self.firstName, self.lastName, self.birthDate)
             cursor.execute(insert_query, user_data)
-            connection.commit()
+            connection.mysql_connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо True
             return True
         except Exception as e:
@@ -47,8 +48,11 @@ class BaseInfo:
             bool: True if the upload was successful, False otherwise.
         """
         try:
-            # Placeholder for actual implementation
-            # тут має бути UPDATE
+            cursor = connection.mysql_connection.cursor()
+            insert_query = "UPDATE baseUserInfo SET firstName = %s, lastName = %s, birthDate = %s WHERE userId = %s"
+            user_data = (self.firstName, self.lastName, self.birthDate, self.id)
+            cursor.execute(insert_query, user_data)
+            connection.mysql_connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо True
             print('base info for user ', self.id, 'load to db')
             return True
@@ -62,8 +66,21 @@ class BaseInfo:
         Loads user's base information from the database.
         """
         if self.id is not None:
-            # Placeholder for actual implementation
-            pass
+            try:
+                cursor = connection.mysql_connection.cursor()
+                query = f"SELECT firstName, lastName, birthDate FROM baseUserInfo WHERE userId = {self.id}"
+                cursor.execute(query)
+                base_info = cursor.fetchone()
+
+                if base_info:
+                    self.firstName, self.lastName, self.birthDate = base_info
+                    print(f"Базова інформація користувача (ID {self.id}) завантажена з бази даних.")
+                else:
+                    print(f"Юзера з ID {self.id} не знайдено в базі даних.")
+                    pass
+
+            except Exception as e:
+                print(f"Помилка при взаємодії з базою даних: {e}")
 
 
 class Credential:
@@ -78,7 +95,7 @@ class Credential:
         self.login: str | None = login
         self.password_to_validate: str | None = password
 
-    def load_from_database(self, user_id: int) -> bool:
+    def load_from_database(self) -> bool:
         """
         Gets login from database by user_id
 
@@ -89,11 +106,16 @@ class Credential:
             bool: True if loading is successful
         """
         try:
-            # Placeholder for actual implementation
-            return True
+            if self.login is not None:
+                user_data = connection.redis_connection.get(str(self.login))
+                print('Login for user', self.login, 'loaded from Redis', user_data)
+                return True
+            else:
+                print('User not found in Redis')
+                return False
         except Exception as e:
             # Якщо сталася помилка, повертаємо False
-            print(f'Failed to load from db login for user {user_id}. Error: {e}')
+            print(f'Failed to load from db login for user {self.login}. Error: {e}')
             return False
 
     def get_id(self) -> int | None:
@@ -104,9 +126,9 @@ class Credential:
             int | None: User ID or None if the password is invalid.
         """
         if self.__to_valid_password():
-            # Placeholder for actual implementation
-            return 1
-            pass
+            user_data = connection.redis_connection.get(str(self.login))
+            user_id = json.loads(user_data)[1]
+            return user_id
         else:
             return None
 
@@ -118,7 +140,15 @@ class Credential:
             str: User's password.
         """
         # Placeholder for actual implementation
-        return 'test_password'
+        try:
+            user_data = connection.redis_connection.get(str(self.login))
+            if user_data:
+                password = json.loads(user_data)[0]
+                return password
+
+        except Exception as e:
+            print(f'Failed to retrieve password from Redis. Error: {e}')
+            return ''
 
     def __to_valid_password(self) -> bool:
         """
@@ -140,12 +170,14 @@ class Credential:
             if new_login is None:
                 raise ValueError("New login cannot be None.")
 
-            old_login: str = self.login
-            self.login = new_login
-            # Placeholder for actual implementation
+            old_user_data = connection.redis_connection.get(str(self.login))
+            if old_user_data is not None:
+                connection.redis_connection.delete(str(self.login))
+                self.login = new_login
+                connection.redis_connection.set(new_login, old_user_data)
             return True
         except Exception as e:
-            # Обробка винятку при оновленні логіну
+            print(f'Failed to update login. Error: {e}')
             return False
 
     def update_password(self, new_password: str) -> bool:
@@ -159,10 +191,12 @@ class Credential:
             if new_password is None:
                 raise ValueError("New password cannot be None.")
 
-            # Placeholder for actual implementation
+            user_data = connection.redis_connection.get(str(self.login))
+            user_id = json.loads(user_data)[1]
+            connection.redis_connection.set(str(self.login), json.dumps([new_password, user_id]))
             return True
         except Exception as e:
-            # Обробка винятку при оновленні паролю
+            print(f'Failed to update password for user {self.login}. Error: {e}')
             return False
 
     def upload_to_database_new(self, password: str, user_id: int) -> bool:
@@ -180,10 +214,10 @@ class Credential:
             if user_id is None:
                 raise ValueError("User id cannot be None.")
 
-            # Placeholder for actual implementation
+            connection.redis_connection.set(self.login, json.dumps((password, user_id)))
             return True
         except Exception as e:
-            # Обробка винятку при внесенні записів в базу
+            print(f'Failed to update password for user {user_id} in Redis. Error: {e}')
             return False
 
 
@@ -206,8 +240,25 @@ class PrivateInfo:
             Dict[str, str | None]: Dictionary containing private information.
         """
         info: Dict[str, str | None] = None
-        # Placeholder for actual implementation
-        return info.copy() if info else {}
+        try:
+            cursor = connection.mysql_connection.cursor(dictionary=True)
+
+            # Виконуємо SQL-запит для отримання приватної інформації про користувача
+            query = "SELECT photo, passportID, phoneNumber, driverLicence, email FROM privateInfo WHERE userId = %s"
+            cursor.execute(query, (self.id,))
+            result = cursor.fetchone()
+
+            if result:
+                print(result)
+                return result
+            else:
+                print(f'Private information not found in MySQL for user {self.id}')
+                return {}
+
+        except Exception as e:
+            # Обробка винятку при завантаженні інформації з бази даних
+            print(f'Failed to load private info from MySQL. Error: {e}')
+            return {}
 
     def upload_to_database_new(self, args: Dict[str, str | None]) -> int:
 
@@ -222,15 +273,17 @@ class PrivateInfo:
         """
         try:
             cursor = connection.mysql_connection.cursor()
-            insert_query = "INSERT INTO privateInfo (userId) VALUES (%s)"
-            user_data = (self.id)
+            insert_query = "INSERT INTO privateInfo (photo, passportID, phoneNumber, driverLicence, email) " \
+                           "VALUES (%s, %s, %s, %s, %s)"
+            user_data = (args.get('photo'), args.get('passportID'), args.get('phoneNumber'),
+                         args.get('driverLicence'), args.get('email'))
             cursor.execute(insert_query, user_data)
-            connection.commit()
+            connection.mysql_connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо id
-            id = None  # get new id
-            if id is None:
+            user_id = cursor.lastrowid
+            if user_id is None:
                 raise ValueError('Error occured when uploading private info for new user')
-            self.id = id
+            self.id = user_id
             del args
             return self.id
         except Exception as e:
@@ -249,8 +302,16 @@ class PrivateInfo:
             int: User id
         """
         try:
-            # Placeholder for actual implementation
-            # тут має бути UPDATE
+            cursor = connection.mysql_connection.cursor()
+            query = "UPDATE privateInfo " \
+                    "SET photo = %s, passportID = %s, phoneNumber = %s, driverLicence = %s, email = %s" \
+                    " WHERE userId = %s"
+
+            # Виконання запиту UPDATE
+            user_data = (args.get('photo'), args.get('passportID'), args.get('phoneNumber'), args.get('driverLicence'),
+                         args.get('email'), self.id)
+            cursor.execute(query, user_data)
+            connection.mysql_connection.commit()
             # Якщо вивантаження в базу пройшло успішно, повертаємо True
             del args
             return True
@@ -303,7 +364,6 @@ class User:
         Returns:
             bool: True if uploading is successful
         """
-        # Placeholder for actual implementation
         self.baseInfo.firstName = new_info['firstName']
         self.baseInfo.lastName = new_info['lastName']
         self.baseInfo.birthDate = new_info['birthDate']
@@ -356,12 +416,20 @@ class Renter(User):
         Loads renter's information from the database.
         """
         if self.id is not None:
+
+            cursor = connection.mysql_connection.cursor()
             self.load_base_info()
             self.load_private_info()
-            # Placeholder for actual implementation
-            # Load from database: registrationDate, driverLicenseDate, canRent
+            query = f"SELECT registrationDate, driverLicenceDate FROM renter WHERE userId = {self.id}"
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+            if result:
+                self.registrationDate, self.driverLicenceDate = result
+            else:
+                print(f'Renter with id {self.id} not found in the database.')
             self.registrationDate = datetime.now().date()
-            self.driverLicenseDate = datetime.now().date()
+            self.driverLicenceDate = datetime.now().date()
 
     def register(self, args: Dict[str, Dict[str, str]]) -> bool:
         """
@@ -395,7 +463,7 @@ class Renter(User):
                 raise ConnectionError("Error occurred when trying to add a new user to Credentials table")
             return True
         except Exception as e:
-            # Handling exception when inserting records into the database
+            print(f'Failed to load renter information from the database. Error: {e}')
             return False
 
     def count_driver_experience(self) -> datetime:
@@ -449,7 +517,13 @@ class CompanyWorker(User):
         if self.id is not None:
             self.load_base_info()
             self.load_private_info()
-            # Placeholder for actual implementation
+            cursor = connection.mysql_connection.cursor()
+            query = f"SELECT position, isActive FROM companyWorker WHERE userId = {self.id}"
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if result:
+                print(result)
+                self.position, self.isActive = result
             self.position = 'MANAGER'
 
 
@@ -496,8 +570,14 @@ class Registration:
             print(f'Can`t register.')
 
 
-private = PrivateInfo(4)
-private.upload_to_database_new()
-user_birthdate = datetime(1990, 5, 15)
-base = BaseInfo(4, "Test", "Name", user_birthdate)
-base.upload_to_database_new()
+#user_birthdate = datetime(1990, 5, 15)
+#base = BaseInfo(8)
+#base.load_from_database()
+#print(base.lastName)
+#private = PrivateInfo(2)
+#renter = Renter(3)
+#renter.load_from_database()
+#com = CompanyWorker(1)
+#com.load_from_database()
+
+
