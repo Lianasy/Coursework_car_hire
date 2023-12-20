@@ -570,14 +570,3 @@ class Registration:
             print(f'Can`t register.')
 
 
-#user_birthdate = datetime(1990, 5, 15)
-#base = BaseInfo(8)
-#base.load_from_database()
-#print(base.lastName)
-#private = PrivateInfo(2)
-#renter = Renter(3)
-#renter.load_from_database()
-#com = CompanyWorker(1)
-#com.load_from_database()
-
-
