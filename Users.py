@@ -569,6 +569,8 @@ class LogIn:
                 self.user: CompanyWorker = CompanyWorker(id)
                 self.user.load_from_database()
 
+    def check_user_role(self):
+        pass
 
 
 class Registration:
@@ -588,5 +590,3 @@ class Registration:
             self.successful = True
         except Exception as err:
             print(f'Can`t register.')
-
-

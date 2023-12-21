@@ -1,14 +1,16 @@
 import tkinter as tk
 
 
-class CarHireApp:
-    def __init__(self, root):
+class CarHire:
+    def __init__(self, root, controller):
+        self.inner_frame = None
         self.filter_frame = None
         self.selected_car_type = None
         self.max_entry = None
         self.min_entry = None
         self.root = root
         self.setup_ui()
+        self.controller = controller
 
     def setup_ui(self):
         self.create_top_buttons()
@@ -94,14 +96,23 @@ class CarHireApp:
                                                                                                              padx=5)
 
     def create_filter_button(self):
-        filter_button = tk.Button(self.filter_frame, text="Filter", width=15, height=3, command=self.apply_filter, font=("Arial", 12))
+        filter_button = tk.Button(self.filter_frame, text="Filter", width=15, height=3, command=self.check_data(), font=("Arial", 12))
         filter_button.grid(row=1, column=0, columnspan=1, rowspan=3, padx=20, pady=10)
 
     def apply_filter(self):
         min_value = self.min_entry.get()
         max_value = self.max_entry.get()
         selected_type = self.selected_car_type.get()  # Get the selected car type
-        self.check_data()
+        for widget in self.inner_frame.winfo_children():
+            widget.destroy()
+
+        ################################## ДОБАВИТЬ ВЫЗОВ МЕТОДА ДЛЯ НАХОЖДЕНИЯ НОВОГО СПИСКА МАШИН ПОСЛЕ ФИЛЬТРАЦИИ!!!!
+        cars = None
+        car_num = len(cars)
+        rows = int(car_num / 3)
+        last_row = car_num % 3
+        self.car_table(rows, last_row, cars)
+
 
     def check_data(self):
         self.reset_fields()  # Спочатку скидаємо попереднє підсвічування
@@ -118,6 +129,8 @@ class CarHireApp:
         if int(self.min_entry.get()) > int(self.max_entry.get()):
             self.min_entry.config(bg='red')
             self.max_entry.config(bg='red')
+            return
+        self.apply_filter()
 
     def reset_fields(self):
         # Скидання підсвічування кольору у всіх полях
@@ -138,22 +151,24 @@ class CarHireApp:
         canvas.configure(yscrollcommand=scrollbar.set)
         canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
-        inner_frame = tk.Frame(canvas)
-        canvas.create_window((0, 0), window=inner_frame, anchor="nw")
-        сar_num = 9
-        columns = 3
-        rows = int(сar_num / 3)
-        last_row = сar_num % 3
-        cell_width = (self.root.winfo_screenwidth() - 200) // columns  # Width of each cell considering padding
-        img = tk.PhotoImage(file="funny-car-photo-conceptual-art.png")
-        price = 100
-        model = "Impala"
-        car_type = "Standard"
-        deposit = 50
+        self.inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=self.inner_frame, anchor="nw")
+        cars = self.controller.get_available_cars()
+        car_num = len(cars)
+        rows = int(car_num / 3)
+        last_row = car_num % 3
+        self.car_table(rows, last_row, cars)
 
+    def rent_apply(self):
+        pass
+
+    def car_table(self, rows, last_row, cars):
+        columns = 3
+        cell_width = (self.root.winfo_screenwidth() - 200) // columns  # Width of each cell considering padding
+        id_counter = 0
         for row in range(rows):  # Create multiple rows
             for col in range(columns):  # Create cells in each row
-                cell_frame = tk.Frame(inner_frame, width=cell_width, height=300, relief='solid', borderwidth=1)
+                cell_frame = tk.Frame(self.inner_frame, width=cell_width, height=300, relief='solid', borderwidth=1)
                 cell_frame.pack_propagate(False)
                 cell_frame.grid(row=row, column=col, padx=5, pady=5)  # Position cells within the row
 
@@ -166,6 +181,10 @@ class CarHireApp:
                 img = img.subsample(3, 3)
                 label_img.config(image=img)
                 label_img.image = img  # Keep a reference to prevent garbage collection
+                price = cars[id_counter].rentPrice()
+                model = cars[id_counter].carModel()
+                car_type = cars[id_counter].carType()
+                deposit = cars[id_counter].deposit()
                 label_temp = tk.Label(cell_frame, text=f"                      ")
                 label_temp.grid(row=0, column=3)
                 label_temp2 = tk.Label(cell_frame, text=f"                                                    ")
@@ -173,29 +192,37 @@ class CarHireApp:
                 label_price = tk.Label(cell_frame, text=f"Price: ${price}", font=("Arial", 12))
                 label_price.grid(row=1, column=1, columnspan=3)
                 label_model = tk.Label(cell_frame, text=f"Model: {model}", font=("Arial", 12))
-                label_model.grid(row=2, column=2,columnspan=3)
+                label_model.grid(row=2, column=2, columnspan=3)
 
                 label_type = tk.Label(cell_frame, text=f"Type: {car_type}", font=("Arial", 12))
                 label_type.grid(row=3, column=2, columnspan=3)
 
                 label_deposit = tk.Label(cell_frame, text=f"Deposit: {deposit}", font=("Arial", 12))
-                label_deposit.grid(row=4, column=2,columnspan=3)
+                label_deposit.grid(row=4, column=2, columnspan=3)
                 filter_button = tk.Button(cell_frame, text="Rent", width=15, height=3,
                                           command=self.rent_apply, font=("Arial", 12))
                 filter_button.grid(row=5, column=2, columnspan=3, rowspan=3, pady=(0, 10))
+                id_counter = id_counter + 1
 
         if last_row > 0:
             for col in range(last_row):
-                cell_frame = tk.Frame(inner_frame, width=cell_width, height=300, relief='solid', borderwidth=1)
+                cell_frame = tk.Frame(self.inner_frame, width=cell_width, height=300, relief='solid', borderwidth=1)
                 cell_frame.pack_propagate(False)
                 cell_frame.grid(row=rows + 1, column=col, padx=5, pady=5)  # Position cells within the row
+                # Inside the loops where you create cells
+                label_img = tk.Label(cell_frame)
+                label_img.grid(row=0, column=0, rowspan=6)  # Займає 4 рядки для зображення
 
-    def rent_apply(self):
-        pass
+                # Load and assign image to the label
+                img = tk.PhotoImage(file="funny-car-photo-conceptual-art.png")
+                img = img.subsample(3, 3)
+                label_img.config(image=img)
+                label_img.image = img  # Keep a reference to prevent garbage collection
+                id_counter = id_counter + 1
 
 root = tk.Tk()
 root.title("Scrollable Table")
 root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()}")
 
-car_hire_app = CarHireApp(root)
+car_hire_app = CarHire(root)
 root.mainloop()

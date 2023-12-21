@@ -2,7 +2,7 @@ import tkinter as tk
 from config import DEFAULT_COLORS, BUTTON_CONFIG
 
 class UserInterface:
-    def __init__(self, root, login, password):
+    def __init__(self, root, сontroller):
         """
         Initialize the UserInterface class with the given parameters.
 
@@ -14,7 +14,7 @@ class UserInterface:
         self.root = root  # Reference to the main Tkinter window
         self.screen_width = self.root.winfo_screenwidth()  # Get the screen width
         self.screen_height = self.root.winfo_screenheight()  # Get the screen height
-
+        self.controller = сontroller
         self.create_interface()  # Call the method to create the user interface
 
     def create_interface(self):

@@ -1,14 +1,13 @@
 import tkinter as tk  # Import the Tkinter library for GUI creation
-
 import tkcalendar
 import re
 
+from CarHireInterface import CarHire
 from UserInterface import *  # Import the UserInterface class from UserInterface module
 from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and button configurations
-
 from Users import LogIn, Registration
-
-
+import Users
+import Controller
 class LoggingInterface:
     def __init__(self, root, config):
         """
@@ -398,24 +397,34 @@ class LoggingInterface:
         user_logging = LogIn(login, password)
         if user_logging.successful:
             print(f"Logging in with Login: {login}, Password: {password}")
-            # далі треба створити RenterController(user_logging.user) чи ManagerController(user_logging.user)
-            if ???:
-                controller = RenterController(user_logging.user)
+            if user_logging.check_user_role():
+                controller = Controller.RenterController(user_logging.user)
                 self.show_user_interface(controller)
             else:
-                controller = ManagerController(user_logging.user)
+                controller = Controller.ManagerController(user_logging.user)
+                self.show_worker_interface(controller)
         else:
             print('Logging isn`t successful')
-            # якийсь екранчик
+            self.clear_interface()  # Clear the previous interface
+            error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
+            error_login_label.place(relx=1, rely=0, anchor=tk.NE, x=400, y=100)
 
-    def show_user_interface(self, login, password):
+    def show_user_interface(self, controller):
         """
         Display the user interface using the UserInterface class instance in the same window.
         """
         self.clear_interface()  # Clear the previous interface
 
         # Create an instance of the UserInterface class to display the user interface in the same window
-        user_interface = UserInterface(self.root, login=login, password=password)
+        user_interface = CarHire(self.root, controller)
+    def show_worker_interface(self, controller):
+        """
+        Display the user interface using the UserInterface class instance in the same window.
+        """
+        self.clear_interface()  # Clear the previous interface
+
+        # Create an instance of the UserInterface class to display the user interface in the same window
+        user_interface = UserInterface(self.root, controller)
 
     def logout(self):
         """
