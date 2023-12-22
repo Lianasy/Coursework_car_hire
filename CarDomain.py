@@ -2,6 +2,7 @@ from typing import Optional
 import copy
 from Connect import connection
 
+
 class CarDocument:
     def __init__(self, carId: int) -> None:
         """
@@ -32,7 +33,7 @@ class CarDocument:
             "fields": ["documentLocation"],
         }
         res = db.find(query)
-        car_id = next(res, {}).get('carId', None)
+        self.carId = next(res, {}).get('carId', None)
         print()
         return self.carId
 
@@ -53,15 +54,15 @@ class CarDocument:
                         }
                     }
                 },
-             "fields": ["documents"],
+                "fields": ["documents"],
             }
             result_list = list(db.find(query))
             document_locations = [doc['documentLocation'] for doc in result_list[0].get('documents', []) if
-                                 doc['documentId'] == doc_id]
+                                  doc['documentId'] == doc_id]
 
             if document_locations:
-                document_location = document_locations[0]
-                print(document_location)
+                self.documentLocation = document_locations[0]
+                print(self.documentLocation)
                 return self.documentLocation
             else:
                 print(f"Місцезнаходження документа для ідентифікатора '{doc_id}' не знайдено.")
@@ -70,7 +71,6 @@ class CarDocument:
         except Exception as e:
             print(f"Помилка: {e}")
             return None
-
 
 
 class Car:
@@ -109,9 +109,7 @@ class Car:
             connection.mysql_connection.commit()
 
         except Exception as e:
-            print(f"Помилка при взаємоді з базою даних: {e}")
-
-
+            print(f"Помилка при взаємодії з базою даних: {e}")
 
     def load_car_info(self) -> None:
         """
@@ -131,8 +129,7 @@ class Car:
                     print(f"Автомобіль з ID {self.carId} не знайдено в базі даних.")
 
             except Exception as e:
-                print(f"Помилка при взаємоді з базою даних: {e}")
-
+                print(f"Помилка при взаємодії з базою даних: {e}")
 
     def get_id(self) -> int:
         """
@@ -160,5 +157,3 @@ class Car:
             document (CarDocument): Document object to be added.
         """
         self.documents.append(document)
-
-

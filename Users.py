@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from typing import Dict
 from Connect import connection
 import json
@@ -99,11 +100,8 @@ class Credential:
         """
         Gets login from database by user_id
 
-        Args:
-            user_id (int): User's id.
-
         Returns:
-            bool: True if loading is successful
+            bool: True if loading was successful
         """
         try:
             if self.login is not None:
@@ -139,7 +137,6 @@ class Credential:
         Returns:
             str: User's password.
         """
-        # Placeholder for actual implementation
         try:
             user_data = connection.redis_connection.get(str(self.login))
             if user_data:
@@ -165,6 +162,9 @@ class Credential:
 
         Args:
             new_login (str): New login for the user.
+
+        Returns:
+            bool: True if updating was successful.
         """
         try:
             if new_login is None:
@@ -186,6 +186,9 @@ class Credential:
 
         Args:
             new_password (str): New password for the user.
+
+        Returns:
+            bool: True if updating was successful.
         """
         try:
             if new_password is None:
@@ -201,11 +204,15 @@ class Credential:
 
     def upload_to_database_new(self, password: str, user_id: int) -> bool:
         """
-                Updates the user's password and reflects the change in the database.
+        Uploads new user's login and password to the database.
 
-                Args:
-                    new_password (str): New password for the user.
-                """
+        Args:
+            password (str): New user's password.
+            user_id (int): New user's id.
+
+        Returns:
+            bool: True if uploading was successful.
+        """
         try:
             if self.login is None:
                 raise ValueError("Login cannot be None.")
@@ -227,8 +234,8 @@ class PrivateInfo:
         Initializes the PrivateInfo object with a user ID.
 
         Args:
-            id (int): User ID. If not provided, upload given privateInfo to the database by method `upload_private_info`
-            and get id for new user
+            id (int): User ID. If not provided, upload given privateInfo to the database by method
+            `upload_to_database_new` and get id for new user
         """
         self.id: int | None = id
 
@@ -239,7 +246,6 @@ class PrivateInfo:
         Returns:
             Dict[str, str | None]: Dictionary containing private information.
         """
-        info: Dict[str, str | None] = None
         try:
             cursor = connection.mysql_connection.cursor(dictionary=True)
 
@@ -269,7 +275,7 @@ class PrivateInfo:
             args (Dict[str, str | None]): Dictionary containing private information.
 
         Returns:
-            int: User id
+            int: New user's id.
         """
         try:
             cursor = connection.mysql_connection.cursor()
@@ -299,7 +305,7 @@ class PrivateInfo:
             args (Dict[str, str | None]): Dictionary containing private information.
 
         Returns:
-            int: User id
+            bool: True if uploading was successful.
         """
         try:
             cursor = connection.mysql_connection.cursor()
@@ -336,7 +342,7 @@ class User:
 
     def load_private_info(self) -> None:
         """
-        Loads user's private information from the database.
+        Initialize user's private information instance.
         """
         if self.id is not None:
             self.privateInfo = PrivateInfo(self.id)
@@ -362,7 +368,7 @@ class User:
                                                in format {'firstName': str, 'lastName': str, 'birthDate': datetime}.
 
         Returns:
-            bool: True if uploading is successful
+            bool: True if uploading was successful.
         """
         self.baseInfo.firstName = new_info['firstName']
         self.baseInfo.lastName = new_info['lastName']
@@ -374,10 +380,11 @@ class User:
         Changes user's private information and updates it in the database.
 
         Args:
-            new_info (Dict[str, str | None]): Dictionary containing new private information.
+            new_info (Dict[str, str | None]): Dictionary containing new private information
+            in format {'photo': object, 'passportID': str, 'phoneNumber': str, 'email': str}.
 
         Returns:
-            bool: True if uploading is successful
+            bool: True if uploading was successful.
         """
         return self.privateInfo.upload_to_database_existing(new_info)
 
@@ -386,10 +393,10 @@ class User:
         Changes user's credentials (login and password) and updates them in the database.
 
         Args:
-            new_info (Dict[str, str]): Dictionary containing new credentials.
+            new_info (Dict[str, str]): Dictionary containing new credentials in format {'login': str, 'password': str}.
 
         Returns:
-            bool: True if changing both login and password is successful
+            bool: True if changing both login and password was successful.
         """
         result_login = self.creds.update_login(new_info['login'])
         if result_login:
@@ -405,6 +412,7 @@ class Renter(User):
 
         Args:
             id (int): Renter id.
+            creds (Credential): Renter's credentials (login, password).
         """
         super().__init__(id, creds)
         self.registrationDate: datetime | None = None
@@ -425,30 +433,34 @@ class Renter(User):
             result = cursor.fetchone()
 
             if result:
-                self.registrationDate, self.driverLicenceDate = result
+                self.registrationDate, self.driverLicenseDate = result
             else:
                 print(f'Renter with id {self.id} not found in the database.')
-            self.registrationDate = datetime.now().date()
-            self.driverLicenceDate = datetime.now().date()
 
-    def register(self, args: Dict[str, Dict[str, str]]) -> bool:
+    def register(self, args: Dict[str, Dict[str, str] | datetime]) -> bool:
         """
         Registers a new renter and inserts their information into the database.
 
         Args:
-            args (Dict[str, Dict[str, str]]): Dictionary containing information for registration.
+            args (Dict[str, Dict[str, str] | datetime]): Dictionary containing information for registration in format
+            {
+                'privateInfo': {'photo': object, 'passportID': str, 'phoneNumber': str, 'email': str},
+                'baseInfo': {'firstName': str, 'lastName': str, 'birthDate': datetime},
+                'driverLicenseDate': datetime,
+                'credentials': {'login': str, 'password': str}
+            }.
 
         Returns:
-            bool: True if registration is successful, False otherwise.
+            bool: True if registration was successful, False otherwise.
         """
         try:
             self.privateInfo = PrivateInfo()
-            id = self.privateInfo.upload_to_database_new(args['privateInfo'])
-            if id == -1:
+            id_from_database = self.privateInfo.upload_to_database_new(args['privateInfo'])
+            if id_from_database == -1:
                 self.privateInfo = None
                 raise ConnectionError("Error occurred when trying to add a new user to PrivateInfo table")
 
-            self.id = id
+            self.id = id_from_database
 
             self.baseInfo = BaseInfo(
                 self.id, args['baseInfo']['firstName'], args['baseInfo']['lastName'], args['baseInfo']['birthDate']
@@ -466,27 +478,30 @@ class Renter(User):
             print(f'Failed to load renter information from the database. Error: {e}')
             return False
 
-    def count_driver_experience(self) -> datetime:
+    def count_driver_experience(self) -> int:
         """
         Calculates the driver's experience based on the current date and driver's license date.
 
         Returns:
-            datetime: Driver's experience duration.
+            int: Driver's experience duration.
         """
-        return datetime.now().date() - self.driverLicenseDate
+        return datetime.now().year - self.driverLicenseDate.year
 
     def count_time_in_system(self) -> int:
         """
         Calculates the time spent in the system based on the current date and registration date.
 
         Returns:
-            datetime: Time in the system duration.
+            int: Time in the system duration.
         """
-        return datetime.now().date() - self.registrationDate
+        return relativedelta(datetime.now(), self.registrationDate).months
 
-    def get_agreements(self):
+    def get_agreements(self) -> dict:
         """
         Retrieves agreements from the Agreement document based on the user ID.
+
+        Returns:
+            dict: list of user's agreements.
         """
         try:
             db = connection.couchdb_connection['car_hire']
@@ -525,6 +540,10 @@ class CompanyWorker(User):
     def __init__(self, id: int, creds: Credential | None = None) -> None:
         """
         Initializes the CompanyWorker object.
+
+        Args:
+            id (int): Company worker id.
+            creds (Credential): Company worker's credentials (login, password).
         """
         super().__init__(id, creds)
         self.position: str | None = None
@@ -544,7 +563,6 @@ class CompanyWorker(User):
             if result:
                 print(result)
                 self.position, self.isActive = result
-            self.position = 'MANAGER'
 
 
 class LogIn:
@@ -564,22 +582,41 @@ class LogIn:
             # Determine the user type - client or employee
             if True:  # For now, all are clients
                 self.user: Renter = Renter(id)
-                self.user.load_from_database()
             else:
                 self.user: CompanyWorker = CompanyWorker(id)
-                self.user.load_from_database()
+            self.user.load_from_database()
 
-    def check_user_role(self):
-        pass
+    def check_user_role(self) -> str:
+        """
+        Checks the role of logged-in user.
+
+        Returns:
+            str: 'RENTER' for renter, 'MANAGER' for manager, 'UNKNOWN' for other types, 'ERROR' if user wasn't created.
+        """
+        if self.user is not None:
+            if isinstance(self.user, Renter):
+                return 'RENTER'
+            elif isinstance(self.user, CompanyWorker):
+                return self.user.position
+            else:
+                return 'UNKNOWN'
+        else:
+            return 'ERROR'
 
 
 class Registration:
-    def __init__(self, args: Dict[str, str]) -> None:
+    def __init__(self, args: Dict[str, Dict[str, str] | datetime]) -> None:
         """
         Initializes the Registration object with user information.
 
         Args:
-            args (Dict[str, str]): Dictionary containing information for registration.
+            args (Dict[str, Dict[str, str] | datetime]): Dictionary containing information for registration in format
+            {
+                'privateInfo': {'photo': object, 'passportID': str, 'phoneNumber': str, 'email': str},
+                'baseInfo': {'firstName': str, 'lastName': str, 'birthDate': datetime},
+                'driverLicenseDate': datetime,
+                'credentials': {'login': str, 'password': str}
+            }.
         """
         self.user: Renter = Renter()
         self.successful = False

@@ -9,14 +9,16 @@ from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and bu
 from Users import LogIn, Registration
 import Users
 import Controller
+
+
 class LoggingInterface:
     def __init__(self, root, config):
         """
         Initialize the LoggingInterface class with the given parameters.
 
         Args:
-        - root (tk.Tk): The root window object
-        - config (dict): Configuration dictionary containing button dimensions and colors
+        - root (tk.Tk): The root window object.
+        - config (dict): Configuration dictionary containing button dimensions and colors.
         """
         self.entry_photo = None
         self.entry_lname = None
@@ -398,17 +400,18 @@ class LoggingInterface:
         user_logging = LogIn(login, password)
         if user_logging.successful:
             print(f"Logging in with Login: {login}, Password: {password}")
-            if user_logging.check_user_role():
+            user_role = user_logging.check_user_role()
+            if user_role == 'RENTER':
                 controller = Controller.RenterController(user_logging.user)
                 self.show_user_interface(controller)
-            else:
+            elif user_role == 'MANAGER':
                 controller = Controller.ManagerController(user_logging.user)
                 self.show_worker_interface(controller)
-        else:
-            print('Logging isn`t successful')
-            self.clear_interface()  # Clear the previous interface
-            error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
-            error_login_label.place(relx=1, rely=0, anchor=tk.NE, x=400, y=100)
+
+        print('Logging isn`t successful')
+        self.clear_interface()  # Clear the previous interface
+        error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
+        error_login_label.place(relx=1, rely=0, anchor=tk.NE, x=400, y=100)
 
     def show_user_interface(self, controller):
         """
@@ -418,6 +421,7 @@ class LoggingInterface:
 
         # Create an instance of the UserInterface class to display the user interface in the same window
         user_interface = CarHire(self.root, controller)
+
     def show_worker_interface(self, controller):
         """
         Display the user interface using the UserInterface class instance in the same window.
@@ -440,7 +444,19 @@ class LoggingInterface:
         """
         new_login = self.entry_login.get()
         new_password = self.entry_password.get()
-        print(f"Creating new account with Login: {new_login}, Password: {new_password}")
+        registration_info = {
+                # 'privateInfo': {'photo': object, 'passportID': str, 'phoneNumber': str, 'email': str},
+                # 'baseInfo': {'firstName': str, 'lastName': str, 'birthDate': datetime},
+                # 'driverLicenseDate': datetime,
+                # 'credentials': {'login': str, 'password': str}
+            }
+        user_registration = Registration(registration_info)
+        if user_registration.successful:
+            print(f"Creating new account with Login: {new_login}, Password: {new_password}")
+            controller = Controller.RenterController(user_registration.user)
+            self.show_user_interface(controller)
+
+        print('Registration isn`t successful')
 
     def login_employee_account(self):
         """
