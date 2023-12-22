@@ -19,16 +19,14 @@ class Rent:
             rent_id (int | None): Unique identifier for the rent.
             user_id (int | None): User ID associated with the rent.
             car_id (int | None): Car ID associated with the rent.
-            car_price (float | None): Rental price per day for the car.
+            price (float | None): Rental price.
             discount (int | None): Discount applied to the rental price.
             deposit (float | None): Deposit amount for the rent.
-            days_for_rent (int | None): Number of days the car is rented.
+            start_time (datetime | None): Start time of the rent.
+            end_time (datetime | None): End time of the rent.
             agreement (str | None): Agreement details for the rent.
             agreement_description (str | None): Description of the rent agreement.
-
-        Note:
-            If `rent_id` is not provided, it generates a new agreement and description.
-            Otherwise, it uses the provided `agreement` and `agreement_description`.
+            isRentFinished (bool | None): True when the rent is completed and the car is returned, False otherwise.
         """
         self.rent_id: int | None = rent_id
         self.user_id: int | None = user_id
@@ -85,18 +83,18 @@ class Rent:
             print(f'Failed to upload rent info to MySQL. Error: {e}')
             return False
 
-        #db = connection.couchdb_connection['car_hire']
-        #document_id = f"Agreement_{str(self.rent_id)}"
-        #document_location = f"Agreement_{str(self.rent_id)}.doc"
-        #new_document = {
+        # db = connection.couchdb_connection['car_hire']
+        # document_id = f"Agreement_{str(self.rent_id)}"
+        # document_location = f"Agreement_{str(self.rent_id)}.doc"
+        # new_document = {
         #    "_id": document_id,
         #    "documentLocation": document_location,
         #    "rentId": self.rent_id
-        #}
-        #response = db.save(new_document)
-        #if response:
+        # }
+        # response = db.save(new_document)
+        # if response:
         #    print("Document added to CouchDB successfully.")
-        #else:
+        # else:
         #    print(f'Failed to add document to CouchDB. Response: {response}')
 
     def upload_to_database_existing(self):
@@ -120,6 +118,7 @@ class Rent:
             # Якщо сталася помилка, повертаємо False
             print(f'Failed to update rent details for rent {self.rent_id} in db. Error: {e}')
             return False
+
     def load_from_database(self) -> None:
         """
         Loads rent details from the database.
@@ -142,7 +141,7 @@ class Rent:
 
     def set_rent_finished(self, set_finished: bool = True) -> None:
         """
-        Marks the rent as set_finished and updates the database.
+        Marks the rent as set_finished and updates in the database.
 
         Args:
             set_finished (bool): Indicates whether the rent is finished or not.
@@ -171,6 +170,7 @@ class RenterController:
             renter (Renter): Renter from LogIn.user or Registration.user
         """
         self.renter: Renter = renter
+        self.cars = None
 
     def calculate_discount(self) -> int:
         """
@@ -180,26 +180,25 @@ class RenterController:
             int: Discount percentage.
         """
         time_in_system = self.renter.count_time_in_system()
-        if time_in_system >= 365:
-            return 10
-        elif time_in_system >= 180:
-            return 5
-        elif time_in_system >= 90:
-            return 3
-        elif time_in_system >= 30:
-            return 1
-        else:
-            return 0
+        discount_per_6_months = 5
 
-    def calculate_deposit(self) -> float:
+        full_6_month_periods = time_in_system // 6
+
+        discount = min(full_6_month_periods * discount_per_6_months, 25)
+
+        return discount
+
+    def calculate_deposit(self, car_price: float) -> float:
         """
-        Calculates the deposit amount based on user information.
+        Calculates the deposit amount based on user and car information.
 
+        Args:
+            car_price (float): Selected car's price.
         Returns:
             float: Deposit amount.
         """
-
-        pass
+        driving_exp = self.renter.count_driver_experience()
+        return 0.9 * car_price / driving_exp
 
     def get_available_cars(self) -> list[Car]:
         """
@@ -232,32 +231,71 @@ class RenterController:
                     carType=row[5],
                 )
                 available_cars.append(car)
-
+            self.cars = available_cars
             return available_cars
 
         except Exception as e:
             print(f'Failed to retrieve available cars. Error: {e}')
 
+    def get_filtered_cars(self, price_range: tuple | None = None,
+                    car_types: str | list[str] | None = None) -> list[Car]:
+        """
+        Filters cars based on price range and car types.
 
+        Parameters:
+            price_range (tuple | None): Tuple representing the price range (min_price, max_price).
+            car_types (str | list[str] | None): Type of car or list of types to filter.
 
-    def rent_car(self, car: Car, days_for_rent: int) -> None:
+        Returns:
+            list[Car]: Filtered list of cars.
+        """
+        filtered_cars = []
+        if self.cars is None:
+            self.get_available_cars()
+        if car_types is not None:
+            if isinstance(car_types, str):
+                car_types = [car_types]
+        for car in self.cars:
+            if price_range is not None:
+                min_price, max_price = price_range
+                if car.rentPrice is not None and min_price <= car.rentPrice <= max_price:
+                    pass
+                else:
+                    continue
+
+            if car_types is not None:
+                if car.carType not in car_types:
+                    continue
+
+            filtered_cars.append(car)
+
+        return filtered_cars
+
+    def rent_car(self, car: Car, days_for_rent: int) -> bool:
         """
         Rents a car for a specified number of days and updates the database.
 
         Args:
             car (Car): Car object to be rented.
             days_for_rent (int): Number of days for the rent.
-        """
-        rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
-                    discount=self.calculate_discount(), deposit=self.calculate_deposit(), start_time=datetime.now().date(),
-                    end_time=datetime.now().date() + timedelta(days=days_for_rent))
-        rent.generate_agreement()
-        rent.generate_agreement_description()
-        rent.upload_to_database_new()
-        car.set_rent_status('IN_RENT')
-        car.upload_car_info()
-        self.renter.set_rent_ability(False)
 
+        Returns:
+            bool: True if rent was successfully added, False otherwise.
+        """
+        if self.renter.canRent:
+            rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
+                        discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
+                        start_time=datetime.now().date(),
+                        end_time=datetime.now().date() + timedelta(days=days_for_rent))
+            rent.generate_agreement()
+            rent.generate_agreement_description()
+            rent.upload_to_database_new()
+            car.set_rent_status('IN_RENT')
+            car.upload_car_info()
+            self.renter.set_rent_ability(False)
+            return True
+        else:
+            return False
 
 
 class ManagerController:
@@ -269,6 +307,9 @@ class ManagerController:
             manager (CompanyWorker): Manager object from LogIn.user.
         """
         self.manager: CompanyWorker = manager
+        self.users = None
+        self.cars = None
+        self.rents = None
 
     def end_rent(self, rent: Rent) -> None:
         """
@@ -278,7 +319,6 @@ class ManagerController:
             rent (Rent): Rent to be ended
         """
         rent.set_rent_finished()
-        rent.upload_to_database_existing()
 
     def change_user_info(self, user: Renter, new_info: Dict[str, str]) -> None:
         """
@@ -313,19 +353,43 @@ class ManagerController:
 
             renters = []
             for row in results:
-
                 renter = Renter(row[0], None)
                 renter.registrationDate = row[1]
                 renter.driverLicenseDate = row[2]
                 renter.canRent = True
 
                 renters.append(renter)
-
+            self.users = renters
             return renters
 
         except Exception as e:
             print(f'Failed to retrieve users from the database. Error: {e}')
             return []
+
+    def get_filtered_users(self, rentability: bool | list[bool] | None = None) -> list[Renter]:
+        """
+        Filters cars based on price range and car types.
+
+        Parameters:
+            rentability (bool | list[bool] | None): Rentability of user or list of rentabilities to filter.
+
+        Returns:
+            list[Renter]: Filtered list of users.
+        """
+        filtered_users = []
+        if self.users is None:
+            self.get_users()
+        if rentability is not None:
+            if isinstance(rentability, str):
+                rentability = [rentability]
+        for user in self.users:
+            if rentability is not None:
+                if user.canRent not in rentability:
+                    continue
+
+            filtered_users.append(user)
+
+        return filtered_users
 
     def get_cars(self) -> list[Car]:
         """
@@ -356,49 +420,82 @@ class ManagerController:
                     carType=row[5],
                 )
                 cars.append(car)
-
+            self.cars = cars
             return cars
 
         except Exception as e:
             print(f'Failed to retrieve available cars. Error: {e}')
 
+    # def get_rented_cars(self) -> list[Car]:
+    #     """
+    #     Retrieves a list of rented cars from the Rent table in the database.
+    #
+    #     Returns:
+    #         list[Car]: List of rented cars.
+    #     """
+    #     rented_cars = []
+    #
+    #     try:
+    #         cursor = connection.mysql_connection.cursor()
+    #
+    #         query = """
+    #                                SELECT *
+    #                                FROM car
+    #                                WHERE rentStatus = 'IN_RENT'
+    #                            """
+    #
+    #         cursor.execute(query)
+    #         results = cursor.fetchall()
+    #
+    #         for row in results:
+    #             car = Car(
+    #                 carId=row[0],
+    #                 carNumber=row[1],
+    #                 carModel=row[2],
+    #                 rentPrice=row[3],
+    #                 rentStatus=row[4],
+    #                 carType=row[5],
+    #             )
+    #             rented_cars.append(car)
+    #
+    #         return rented_cars
+    #
+    #     except Exception as e:
+    #         print(f'Failed to retrieve available cars. Error: {e}')
 
-    def get_rented_cars(self) -> list[Car]:
+    def get_filtered_cars(self, rental_status: str | list[str] | None = None,
+                          car_type: str | list[str] | None = None) -> list[Car]:
         """
-        Retrieves a list of rented cars from the Rent table in the database.
+        Filters cars based on price range and car types.
+
+        Parameters:
+            rental_status (bool | list[bool] | None): Rental status of car or list of rental statuses to filter.
+            car_type (str | list[str] | None): Type of car or list of car types to filter.
 
         Returns:
-            list[Car]: List of rented cars.
+            list[Car]: Filtered list of cars.
         """
-        rented_cars = []
+        filtered_cars = []
+        if self.cars is None:
+            self.get_cars()
+        if rental_status is not None:
+            if isinstance(rental_status, str):
+                rental_status = [rental_status]
+        if car_type is not None:
+            if isinstance(car_type, str):
+                car_type = [car_type]
 
-        try:
-            cursor = connection.mysql_connection.cursor()
+        for car in self.cars:
+            if rental_status is not None:
+                if car.rentStatus not in rental_status:
+                    continue
+            if car_type is not None:
+                if car.carType not in car_type:
+                    continue
 
-            query = """
-                                   SELECT *
-                                   FROM car
-                                   WHERE rentStatus = 'IN_RENT'
-                               """
+            filtered_cars.append(car)
 
-            cursor.execute(query)
-            results = cursor.fetchall()
-
-            for row in results:
-                car = Car(
-                    carId=row[0],
-                    carNumber=row[1],
-                    carModel=row[2],
-                    rentPrice=row[3],
-                    rentStatus=row[4],
-                    carType=row[5],
-                )
-                rented_cars.append(car)
-
-            return rented_cars
-
-        except Exception as e:
-            print(f'Failed to retrieve available cars. Error: {e}')
+        return filtered_cars
 
     def get_expired_rents(self) -> list[Rent]:
         """
@@ -440,5 +537,3 @@ class ManagerController:
         except Exception as e:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
-
-

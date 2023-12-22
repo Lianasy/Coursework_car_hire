@@ -478,14 +478,19 @@ class Renter(User):
             print(f'Failed to load renter information from the database. Error: {e}')
             return False
 
-    def count_driver_experience(self) -> int:
+    def count_driver_experience(self) -> float:
         """
-        Calculates the driver's experience based on the current date and driver's license date.
+        Calculates the driver's experience in fractional years based on the current date and driver's license date.
 
         Returns:
-            int: Driver's experience duration.
+            float: Driver's experience duration in fractional years.
         """
-        return datetime.now().year - self.driverLicenseDate.year
+        current_date = datetime.now()
+        experience_delta = relativedelta(current_date, self.driverLicenseDate)
+
+        experience_years = experience_delta.years + experience_delta.months / 12 + experience_delta.days / 365
+
+        return experience_years
 
     def count_time_in_system(self) -> int:
         """
@@ -533,6 +538,10 @@ class Renter(User):
         Args:
             val (bool): Rental status.
         """
+        cursor = connection.mysql_connection.cursor()
+        update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
+        cursor.execute(update_query, (val, self.id))
+        connection.mysql_connection.commit()
         self.canRent = val
 
 
