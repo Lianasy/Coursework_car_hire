@@ -113,7 +113,6 @@ class CarHire:
         last_row = car_num % 3
         self.car_table(rows, last_row, cars)
 
-
     def check_data(self):
         self.reset_fields()  # Спочатку скидаємо попереднє підсвічування
 
@@ -184,7 +183,7 @@ class CarHire:
                 price = cars[id_counter].rentPrice()
                 model = cars[id_counter].carModel()
                 car_type = cars[id_counter].carType()
-                deposit = cars[id_counter].deposit()
+                deposit = self.controller.calculate_deposit()
                 label_temp = tk.Label(cell_frame, text=f"                      ")
                 label_temp.grid(row=0, column=3)
                 label_temp2 = tk.Label(cell_frame, text=f"                                                    ")
@@ -218,6 +217,27 @@ class CarHire:
                 img = img.subsample(3, 3)
                 label_img.config(image=img)
                 label_img.image = img  # Keep a reference to prevent garbage collection
+                price = cars[id_counter].rentPrice()
+                model = cars[id_counter].carModel()
+                car_type = cars[id_counter].carType()
+                deposit = self.controller.calculate_deposit()
+                label_temp = tk.Label(cell_frame, text=f"                      ")
+                label_temp.grid(row=0, column=3)
+                label_temp2 = tk.Label(cell_frame, text=f"                                                    ")
+                label_temp2.grid(row=0, column=2)
+                label_price = tk.Label(cell_frame, text=f"Price: ${price}", font=("Arial", 12))
+                label_price.grid(row=1, column=1, columnspan=3)
+                label_model = tk.Label(cell_frame, text=f"Model: {model}", font=("Arial", 12))
+                label_model.grid(row=2, column=2, columnspan=3)
+
+                label_type = tk.Label(cell_frame, text=f"Type: {car_type}", font=("Arial", 12))
+                label_type.grid(row=3, column=2, columnspan=3)
+
+                label_deposit = tk.Label(cell_frame, text=f"Deposit: {deposit}", font=("Arial", 12))
+                label_deposit.grid(row=4, column=2, columnspan=3)
+                filter_button = tk.Button(cell_frame, text="Rent", width=15, height=3,
+                                          command=self.rent_apply, font=("Arial", 12))
+                filter_button.grid(row=5, column=2, columnspan=3, rowspan=3, pady=(0, 10))
                 id_counter = id_counter + 1
 
 root = tk.Tk()
