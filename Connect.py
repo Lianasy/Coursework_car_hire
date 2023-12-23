@@ -13,5 +13,5 @@ class Connection:
 
 
 connection = Connection("178.158.240.188",
-                        "localhost", "root", "root-pw", "car_hire",
+                        "178.158.240.188", "root", "root-pw", "car_hire",
                         "couchdb", "coconut", "178.158.240.188")
