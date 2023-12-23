@@ -89,8 +89,8 @@ class EmployeeInterface:
 
         frame_contracts_top.grid(row=0, column=2, padx=(frame_padx_left, frame_padx_right),
                                  pady=(50, 0))
-        users = self.controller.get_users(self)
-        cars = self.controller.get_cars(self)
+        users = self.controller.get_users()
+        cars = self.controller.get_cars()
         expired_rents = self.controller.get_expired_rents(self)
         label_drivers = tk.Label(self.inner_frame, text="Drivers", font=("Arial", 12))
         label_drivers.grid(row=1, column=0, padx=(frame_padx_left, frame_padx_right), pady=(20, frame_pady_bottom // 2))
