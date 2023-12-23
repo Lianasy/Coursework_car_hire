@@ -346,7 +346,6 @@ class User:
         """
         if self.id is not None:
             self.privateInfo = PrivateInfo(self.id)
-            self.privateInfo.load_from_database()
         else:
             self.privateInfo = None
 

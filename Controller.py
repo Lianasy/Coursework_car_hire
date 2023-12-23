@@ -10,7 +10,7 @@ class Rent:
     def __init__(self, rent_id: int | None = None, user_id: int | None = None, car_id: int | None = None,
                  price: float | None = None, discount: int | None = None, deposit: float | None = None,
                  start_time: datetime | None = datetime.now().date(), end_time: datetime | None = datetime.now().date(),
-                 agreement: str | None = None, agreement_description: str | None = None,
+                 agreement: str | None = None, agreement_location: str | None = None,
                  isRentFinished: bool | None = False) -> None:
         """
         Initializes the Rent object with optional parameters.
@@ -37,26 +37,26 @@ class Rent:
         self.start_time: datetime = start_time
         self.end_time: datetime = end_time
         self.agreement: str | None = agreement
-        self.agreement_description: str | None = agreement_description
+        self.agreement_location: str | None = agreement_location
         self.isRentFinished: bool = isRentFinished
 
-    def generate_agreement(self) -> str:
+    def generate_agreement(self):
         """
         Generates a new agreement for the rent.
 
         Returns:
             str: Agreement details.
         """
-        pass
+        self.agreement = f"Agreement_{str(self.rent_id)}"
 
-    def generate_agreement_description(self) -> str:
+    def generate_agreement_location(self):
         """
         Generates a description for the rent agreement.
 
         Returns:
             str: Agreement description.
         """
-        pass
+        self.agreement_location = f"Agreement_{str(self.rent_id)}.doc"
 
     def upload_to_database_new(self):
         """
@@ -77,25 +77,24 @@ class Rent:
             if rent_id is not None:
                 self.rent_id = rent_id
             # Якщо вивантаження в базу пройшло успішно, повертаємо True
+            db = connection.couchdb_connection['car_hire']
+            new_document = {
+               "_id": self.agreement,
+               "documentLocation": self.agreement_location,
+               "rentId": self.rent_id
+            }
+            response = db.save(new_document)
+            if response:
+               print("Document added to CouchDB successfully.")
+            else:
+               print(f'Failed to add document to CouchDB. Response: {response}')
             return True
         except Exception as e:
             # Якщо сталася помилка, повертаємо False
             print(f'Failed to upload rent info to MySQL. Error: {e}')
             return False
 
-        # db = connection.couchdb_connection['car_hire']
-        # document_id = f"Agreement_{str(self.rent_id)}"
-        # document_location = f"Agreement_{str(self.rent_id)}.doc"
-        # new_document = {
-        #    "_id": document_id,
-        #    "documentLocation": document_location,
-        #    "rentId": self.rent_id
-        # }
-        # response = db.save(new_document)
-        # if response:
-        #    print("Document added to CouchDB successfully.")
-        # else:
-        #    print(f'Failed to add document to CouchDB. Response: {response}')
+
 
     def upload_to_database_existing(self):
         """
@@ -288,7 +287,7 @@ class RenterController:
                         start_time=datetime.now().date(),
                         end_time=datetime.now().date() + timedelta(days=days_for_rent))
             rent.generate_agreement()
-            rent.generate_agreement_description()
+            rent.generate_agreement_location()
             rent.upload_to_database_new()
             car.set_rent_status('IN_RENT')
             car.upload_car_info()
@@ -537,3 +536,8 @@ class ManagerController:
         except Exception as e:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
+
+
+
+rent = Rent()
+rent.upload_to_database_new()
