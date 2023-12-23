@@ -425,11 +425,13 @@ class LoggingInterface:
             elif user_role == 'MANAGER':
                 controller = Controller.ManagerController(user_logging.user)
                 self.show_worker_interface(controller)
+        else:
+            print(f"Logging isn`t successful. Login: {login}, Password: {password}")
+            self.clear_interface()  # Clear the previous interface
+            error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
+            error_login_label.place(relx=0, rely=0, anchor=tk.NE, x=1000, y=100)
 
-        print(f"Logging isn`t successful. Login: {login}, Password: {password}")
-        self.clear_interface()  # Clear the previous interface
-        error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
-        error_login_label.place(relx=0, rely=0, anchor=tk.NE, x=1000, y=100)
+
 
     def show_user_interface(self, controller):
         """
