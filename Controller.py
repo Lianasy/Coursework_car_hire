@@ -537,7 +537,3 @@ class ManagerController:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
 
-
-
-rent = Rent()
-rent.upload_to_database_new()
