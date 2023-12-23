@@ -599,7 +599,7 @@ class LogIn:
                 result_company_worker = cursor.fetchone()
                 if result_company_worker:
                     self.user: CompanyWorker = CompanyWorker(id)
-                    print(self.user.load_from_database())
+                    self.user.load_from_database()
 
                 else:
                     query1 = f"SELECT userId FROM renter WHERE userId = {id}"
@@ -607,7 +607,7 @@ class LogIn:
                     result_renter = cursor.fetchone()
                     if result_renter:
                         self.user: Renter = Renter(id)
-                        print(self.user.load_from_database())
+                        self.user.load_from_database()
             except Exception as e:
                 print(f'Error checking company worker existence: {e}')
 
@@ -654,6 +654,4 @@ class Registration:
             print(f'Can`t register.')
 
 
-cred = Credential('Ron')
-log = LogIn('Ron', 'Weasly312')
 

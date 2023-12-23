@@ -542,5 +542,3 @@ class ManagerController:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
 
-
-
