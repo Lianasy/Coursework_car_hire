@@ -91,7 +91,7 @@ class EmployeeInterface:
                                  pady=(50, 0))
         users = self.controller.get_users()
         cars = self.controller.get_cars()
-        expired_rents = self.controller.get_expired_rents(self)
+        expired_rents = self.controller.get_expired_rents()
         label_drivers = tk.Label(self.inner_frame, text="Drivers", font=("Arial", 12))
         label_drivers.grid(row=1, column=0, padx=(frame_padx_left, frame_padx_right), pady=(20, frame_pady_bottom // 2))
 
@@ -222,7 +222,7 @@ class EmployeeInterface:
             label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
 
         for idx, user in enumerate(users, start=1):
-            user_info = [user.firstName, user.lastName, user.licenseNumber, user.canRent]
+            user_info = [user.baseInfo.firstName, user.baseInfo.lastName, user.canRent]
             for i, info in enumerate(user_info):
                 label = tk.Label(self.frame_drivers, text=info, font=("Arial", 9), bg="white")
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
@@ -278,7 +278,7 @@ class EmployeeInterface:
 
         for i, var in enumerate(self.optionsRentability_vars):
             if var.get() == 1:
-                self.selected_rentability.append("Yes" if i == 2 else "No")
+                self.selected_rentability.append(True if i == 2 else False)
 
         self.apply_drivers_filter()
 
@@ -286,7 +286,7 @@ class EmployeeInterface:
         """
                 Applies filters to the drivers' table.
                 """
-        users = self.controller.get_drivers_filtered(self.selected_rentability)
+        users = self.controller.get_filtered_users(self.selected_rentability)
         self.drivers_table(users)
 
     def filter_cars(self):
