@@ -426,7 +426,7 @@ class LoggingInterface:
                 controller = Controller.ManagerController(user_logging.user)
                 self.show_worker_interface(controller)
 
-        print('Logging isn`t successful')
+        print(f"Logging isn`t successful. Login: {login}, Password: {password}")
         self.clear_interface()  # Clear the previous interface
         error_login_label = tk.Label(self.root, text="Invalid login. Login error.", font=("Arial", 36))
         error_login_label.place(relx=0, rely=0, anchor=tk.NE, x=1000, y=100)
