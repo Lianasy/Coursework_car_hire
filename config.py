@@ -112,9 +112,17 @@ BUTTON_CONFIG = {
         'relx': 0.55,
         'rely': 0.65
     },
+    'reg_licence_date_label': {
+        'relx': 0.45,
+        'rely': 0.7
+    },
+    'reg_licence_date_entry': {
+        'relx': 0.55,
+        'rely': 0.7
+    },
     'register_button': {
         'relx': 0.6,
-        'rely': 0.75
+        'rely': 0.8
     }
 
 }

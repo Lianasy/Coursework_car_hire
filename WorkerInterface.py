@@ -2,6 +2,7 @@ import tkinter as tk
 
 
 class EmployeeInterface:
+    # Initializing attributes and setting up the interface
     def __init__(self, root, controller):
         self.frame_drivers = None
         self.frame_cars = None
@@ -20,12 +21,18 @@ class EmployeeInterface:
         self.optionsType_vars = []
 
     def setup_ui(self):
+        """
+                Sets up the user interface elements.
+                """
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")
         self.create_scrollable_frame()
         self.create_logout_button()
         self.create_three_frames()
 
     def create_scrollable_frame(self):
+        """
+                Creates a scrollable frame for content.
+                """
         canvas = tk.Canvas(self.root)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -42,17 +49,29 @@ class EmployeeInterface:
         canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
     def add_content_to_frame(self):
+        """
+                Adds content to the scrollable frame.
+                """
         # Додайте сюди вміст, який ви плануєте розмістити в прокручуваному вікні
         pass
 
     def create_logout_button(self):
+        """
+                Creates a logout button.
+                """
         logout_button = tk.Button(self.root, text="Log out", command=self.log_out)
         logout_button.place(relx=1, rely=0, anchor=tk.NE, x=-25, y=10)
 
     def log_out(self):
+        """
+               Logs out and destroys the interface.
+               """
         self.root.destroy()
 
     def create_three_frames(self):
+        """
+               Creates three frames for different functionalities.
+               """
         frame_padx_left = 10
         frame_padx_right = 30
         frame_pady_top = 300
@@ -101,17 +120,21 @@ class EmployeeInterface:
         frame_contracts.grid_propagate(False)
 
     def solve_problems(self):
+        """
+                Placeholder method for solving problems.
+                """
         pass
 
     def fill_drivers_top_frame(self):
+        """
+                Fills the top frame related to drivers with filter options.
+                """
         frame_padx_left = 10
         frame_padx_right = 30
-        frame_pady_top = 300
         frame_pady_bottom = 20
         frame_spacing = 10  # Проміжок між фреймами
         frame_width = (
                                   self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 50
-        frame_height = self.screen_height - frame_pady_top
         frame_drivers_top = tk.Frame(self.inner_frame, width=frame_width, height=200, bg="white")
         frame_drivers_top.grid(row=0, column=0, sticky="nsew", padx=(frame_padx_left, frame_padx_right),
                                pady=(50, 0))
@@ -134,6 +157,9 @@ class EmployeeInterface:
             self.optionsRentability_vars.append(var)
 
     def fill_cars_top_frame(self):
+        """
+                Fills the top frame related to cars with filter options.
+                """
         frame_padx_left = 10
         frame_padx_right = 30
         frame_pady_top = 300
@@ -180,6 +206,12 @@ class EmployeeInterface:
             self.optionsType_vars.append(var)
 
     def drivers_table(self, users):
+        """
+                Creates a table to display driver information.
+
+                Parameters:
+                    users (list[User]): List of User objects representing drivers.
+                """
         labels_drivers = ["First name", "Last name", "License", "Rentability"]
         # Очистка фрейму перед додаванням нових елементів
         for widget in self.frame_drivers.winfo_children():
@@ -196,6 +228,13 @@ class EmployeeInterface:
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
 
     def cars_table(self, cars):
+        """
+                Creates a table to display car information.
+
+                Parameters:
+                    cars (list[Car]): List of Car objects.
+                """
+
         labels_cars = ["Number", "Model", "Price", "Rental status", "Type"]
         # Очистка фрейму перед додаванням нових елементів
         for widget in self.frame_cars.winfo_children():
@@ -211,6 +250,14 @@ class EmployeeInterface:
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
 
     def contracts_table(self, frame, expired_rents):
+        """
+                Creates a table to display contract information.
+
+                Parameters:
+                    frame (tk.Frame): Frame to place the contract table.
+                    expired_rents (list[Rent]): List of expired Rent objects.
+                """
+
         labels_contracts = ["First name", "Last name", "Car number", "Rental status", "Rental expiration date"]
 
         for i, text in enumerate(labels_contracts):
@@ -224,6 +271,9 @@ class EmployeeInterface:
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
 
     def filter_drivers(self):
+        """
+                Filters drivers based on selected criteria.
+                """
         self.selected_rentability = []
 
         for i, var in enumerate(self.optionsRentability_vars):
@@ -233,12 +283,16 @@ class EmployeeInterface:
         self.apply_drivers_filter()
 
     def apply_drivers_filter(self):
+        """
+                Applies filters to the drivers' table.
+                """
         users = self.controller.get_drivers_filtered(self.selected_rentability)
         self.drivers_table(users)
 
-
-
     def filter_cars(self):
+        """
+                Filters cars based on selected criteria.
+                """
 
         self.selected_rental_statuses.clear()
         self.selected_types.clear()
@@ -254,12 +308,9 @@ class EmployeeInterface:
         self.apply_cars_filter()
 
     def apply_cars_filter(self):
+        """
+                Applies filters to the cars' table.
+                """
         cars = self.controller.get_cars_filtered(self.selected_rental_statuses, self.selected_types)
         self.cars_table(cars)
 
-
-root = tk.Tk()
-root.title("Employee Interface")
-
-employee_interface = EmployeeInterface(root)
-root.mainloop()

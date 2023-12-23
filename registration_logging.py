@@ -20,6 +20,7 @@ class LoggingInterface:
         - root (tk.Tk): The root window object.
         - config (dict): Configuration dictionary containing button dimensions and colors.
         """
+        self.entry_licence_date = None
         self.entry_photo = None
         self.entry_lname = None
         self.entry_phone = None
@@ -313,6 +314,23 @@ class LoggingInterface:
         )
         btn_create.place(relx=self.button_config['register_button']['relx'],
                          rely=self.button_config['register_button']['rely'], anchor=tk.CENTER)
+        ############################################
+        lbl_licence_date = tk.Label(
+            self.root,
+            text="Enter your date of licence",
+            bg=DEFAULT_COLORS['background_color']
+        )
+        lbl_licence_date.place(relx=self.button_config['reg_licence_date_label']['relx'],
+                             rely=self.button_config['reg_licence_date_label']['rely'], anchor=tk.W)
+
+        self.entry_licence_date = tkcalendar.DateEntry(
+            self.root,
+            width=int(self.btn_width * 1.5),
+            date_pattern='yyyy-mm-dd'
+        )
+        self.entry_licence_date.place(relx=self.button_config['reg_licence_date_entry']['relx'],
+                                    rely=self.button_config['reg_licence_date_entry']['rely'], anchor=tk.W)
+        ############################################
 
     def check_data(self):
         self.reset_fields()
@@ -445,10 +463,10 @@ class LoggingInterface:
         new_login = self.entry_login.get()
         new_password = self.entry_password.get()
         registration_info = {
-                # 'privateInfo': {'photo': object, 'passportID': str, 'phoneNumber': str, 'email': str},
-                # 'baseInfo': {'firstName': str, 'lastName': str, 'birthDate': datetime},
-                # 'driverLicenseDate': datetime,
-                # 'credentials': {'login': str, 'password': str}
+                'privateInfo': {'photo': self.entry_photo, 'passportID': self.entry_passport, 'phoneNumber': self.entry_phone, 'email': self.entry_email, 'driverLicence' : self.entry_licence},
+                'baseInfo': {'firstName': self.entry_name, 'lastName': self.entry_lname, 'birthDate': self.entry_birth_date},
+                'driverLicenseDate': self.entry_licence_date,
+                'credentials': {'login': self.entry_login, 'password': self.entry_password}
             }
         user_registration = Registration(registration_info)
         if user_registration.successful:
