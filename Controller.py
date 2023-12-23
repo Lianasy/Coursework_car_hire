@@ -281,20 +281,20 @@ class RenterController:
         Returns:
             bool: True if rent was successfully added, False otherwise.
         """
-        if self.renter.canRent:
-            rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
-                        discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
-                        start_time=datetime.now().date(),
-                        end_time=datetime.now().date() + timedelta(days=days_for_rent))
-            rent.generate_agreement()
-            rent.generate_agreement_location()
-            rent.upload_to_database_new()
-            car.set_rent_status('IN_RENT')
-            car.upload_car_info()
-            self.renter.set_rent_ability(False)
-            return True
-        else:
-            return False
+        # if self.renter.canRent:
+        rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
+                    discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
+                    start_time=datetime.now().date(),
+                    end_time=datetime.now().date() + timedelta(days=days_for_rent))
+        rent.generate_agreement()
+        rent.generate_agreement_location()
+        rent.upload_to_database_new()
+        car.set_rent_status('IN_RENT')
+        car.upload_car_info()
+        self.renter.set_rent_ability(False)
+        return True
+        # else:
+        #     return False
 
 
 class ManagerController:
