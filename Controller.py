@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from CarDomain import Car
-from Users import Renter, CompanyWorker
+from Users import Renter, CompanyWorker, BaseInfo
 from typing import Dict
 from Connect import connection
 import json
@@ -344,7 +344,10 @@ class ManagerController:
             cursor = connection.mysql_connection.cursor()
 
             query = """
-                    SELECT * FROM renter
+                    SELECT renter.userId, renter.registrationDate, renter.driverLicenceDate, baseUserInfo.userId, 
+                    baseUserInfo.firstName, baseUserInfo.lastName, baseUserInfo.birthDate
+                    FROM renter
+                    JOIN baseUserInfo ON renter.userId = baseUserInfo.userId
                 """
 
             cursor.execute(query)
@@ -352,9 +355,11 @@ class ManagerController:
 
             renters = []
             for row in results:
-                renter = Renter(row[0], None)
-                renter.registrationDate = row[1]
-                renter.driverLicenseDate = row[2]
+                renter_id, registration_date, driver_license_date, renter_id, first_name, last_name, birth_date = row
+                base_info = BaseInfo(renter_id, first_name, last_name, birth_date)
+                renter = Renter(renter_id, base_info, None)
+                renter.registrationDate = registration_date
+                renter.driverLicenseDate = driver_license_date
                 renter.canRent = True
 
                 renters.append(renter)
@@ -536,4 +541,6 @@ class ManagerController:
         except Exception as e:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
+
+
 
