@@ -328,15 +328,17 @@ class PrivateInfo:
 
 
 class User:
-    def __init__(self, id: int | None = None, creds: Credential | None = None) -> None:
+    def __init__(self, id: int | None = None, baseInfo: BaseInfo | None = None, creds: Credential | None = None) -> None:
         """
         Initializes the User object with optional parameters.
 
         Args:
-            id int: User ID.
+            id (int | None): User ID.
+            baseInfo (BaseInfo | None): Base information about user, if provided.
+            creds (Credential | None): Credentials information of user, if provided.
         """
         self.id: int = id
-        self.baseInfo: BaseInfo | None = None
+        self.baseInfo: BaseInfo | None = baseInfo
         self.privateInfo: PrivateInfo | None = None
         self.creds: Credential | None = creds
 
@@ -406,15 +408,16 @@ class User:
 
 
 class Renter(User):
-    def __init__(self, id: int | None = None, creds: Credential | None = None) -> None:
+    def __init__(self, id: int | None = None, baseInfo: BaseInfo | None = None, creds: Credential | None = None) -> None:
         """
         Initializes the Renter object with additional attributes.
 
         Args:
-            id (int): Renter id.
-            creds (Credential): Renter's credentials (login, password).
+            id (int | None): Renter id.
+            baseInfo (BaseInfo | None): Renter's base information if provided.
+            creds (Credential | None): Renter's credentials (login, password).
         """
-        super().__init__(id, creds)
+        super().__init__(id=id, baseInfo=baseInfo, creds=creds)
         self.registrationDate: datetime | None = None
         self.driverLicenseDate: datetime | None = None
         self.canRent: bool = True
@@ -546,15 +549,16 @@ class Renter(User):
 
 
 class CompanyWorker(User):
-    def __init__(self, id: int, creds: Credential | None = None) -> None:
+    def __init__(self, id: int, baseInfo: BaseInfo | None = None, creds: Credential | None = None) -> None:
         """
         Initializes the CompanyWorker object.
 
         Args:
-            id (int): Company worker id.
-            creds (Credential): Company worker's credentials (login, password).
+            id (int | None): Company worker id.
+            baseInfo (BaseInfo | None): Company worker's base information if provided.
+            creds (Credential | None): Company worker's credentials (login, password).
         """
-        super().__init__(id, creds)
+        super().__init__(id, baseInfo, creds)
         self.position: str | None = None
         self.isActive: bool = True
 
