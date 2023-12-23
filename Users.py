@@ -346,6 +346,7 @@ class User:
         """
         if self.id is not None:
             self.privateInfo = PrivateInfo(self.id)
+            self.privateInfo.load_from_database()
         else:
             self.privateInfo = None
 
@@ -588,12 +589,24 @@ class LogIn:
         id: int | None = self.creds.get_id()
         if id is not None:
             self.successful = True
-            # Determine the user type - client or employee
-            if True:  # For now, all are clients
-                self.user: Renter = Renter(id)
-            else:
-                self.user: CompanyWorker = CompanyWorker(id)
-            self.user.load_from_database()
+            try:
+                cursor = connection.mysql_connection.cursor()
+                query = f"SELECT userId FROM companyWorker WHERE userId = {id}"
+                cursor.execute(query)
+                result_company_worker = cursor.fetchone()
+                if result_company_worker:
+                    self.user: CompanyWorker = CompanyWorker(id)
+                    print(self.user.load_from_database())
+
+                else:
+                    query1 = f"SELECT userId FROM renter WHERE userId = {id}"
+                    cursor.execute(query1)
+                    result_renter = cursor.fetchone()
+                    if result_renter:
+                        self.user: Renter = Renter(id)
+                        print(self.user.load_from_database())
+            except Exception as e:
+                print(f'Error checking company worker existence: {e}')
 
     def check_user_role(self) -> str:
         """
@@ -636,3 +649,8 @@ class Registration:
             self.successful = True
         except Exception as err:
             print(f'Can`t register.')
+
+
+cred = Credential('Ron')
+log = LogIn('Ron', 'Weasly312')
+
