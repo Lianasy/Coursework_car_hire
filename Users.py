@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from typing import Dict
 from Connect import connection
@@ -437,8 +437,29 @@ class Renter(User):
 
             if result:
                 date1, date2 = result
-                self.registrationDate = datetime.strptime(date1, "%Y-%m-%d")
-                self.driverLicenseDate = datetime.strptime(date2, "%Y-%m-%d")
+                if isinstance(date1, str):
+                    try:
+                        self.registrationDate = datetime.strptime(date1, "%Y-%m-%d")
+                    except ValueError as e:
+                        print(f"Failed to convert string to datetime. Error: {e}")
+                        return None
+                elif isinstance(date1, date) or isinstance(date1, datetime):
+                    self.registrationDate = date1
+                else:
+                    print("Unsupported type. Only str and datetime.date are supported.")
+                    return None
+
+                if isinstance(date2, str):
+                    try:
+                        self.driverLicenseDate = datetime.strptime(date2, "%Y-%m-%d")
+                    except ValueError as e:
+                        print(f"Failed to convert string to datetime. Error: {e}")
+                        return None
+                elif isinstance(date2, date) or isinstance(date2, datetime):
+                    self.registrationDate = date2
+                else:
+                    print("Unsupported type. Only str and datetime.date are supported.")
+                    return None
             else:
                 print(f'Renter with id {self.id} not found in the database.')
 
