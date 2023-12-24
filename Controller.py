@@ -225,7 +225,7 @@ class RenterController:
                     carId=row[0],
                     carNumber=row[1],
                     carModel=row[2],
-                    rentPrice=row[3],
+                    rentPrice=float(row[3]),
                     rentStatus=row[4],
                     carType=row[5],
                 )
