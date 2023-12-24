@@ -436,7 +436,9 @@ class Renter(User):
             result = cursor.fetchone()
 
             if result:
-                self.registrationDate, self.driverLicenseDate = result
+                date1, date2 = result
+                self.registrationDate = datetime.strptime(date1, "%Y-%m-%d")
+                self.driverLicenseDate = datetime.strptime(date2, "%Y-%m-%d")
             else:
                 print(f'Renter with id {self.id} not found in the database.')
 
@@ -472,7 +474,7 @@ class Renter(User):
                 raise ConnectionError("Error occurred when trying to add a new user to BaseInfo table")
 
             self.registrationDate = datetime.now().date()
-            self.driverLicenseDate = args['driverLicenseDate']
+            self.driverLicenseDate = datetime.strptime(args['driverLicenseDate'], "%Y-%m-%d")
             self.creds = Credential(args['credentials']['login'])
             if not self.creds.upload_to_database_new(args['credentials']['password'], self.id):
                 raise ConnectionError("Error occurred when trying to add a new user to Credentials table")
