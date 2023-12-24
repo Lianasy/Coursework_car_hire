@@ -501,12 +501,12 @@ class ManagerController:
 
         return filtered_cars
 
-    def get_expired_rents(self) -> list[tuple(str, str, Rent)]:
+    def get_expired_rents(self) -> list[(str, str, Rent)]:
         """
         Retrieves a list of expired rents from the Rent table in the database.
 
         Returns:
-            list[tuple(str, str, Rent)]: List of user's first name, last name and expired rents.
+            list[(str, str, Rent)]: List of user's first name, last name and expired rents.
         """
         try:
             cursor = connection.mysql_connection.cursor()
@@ -538,7 +538,7 @@ class ManagerController:
                 )
                 users_first_name = row[9]
                 users_last_name = row[10]
-                expired_rents.append(tuple(users_first_name, users_last_name, rent))
+                expired_rents.append((users_first_name, users_last_name, rent))
 
             return expired_rents
 
