@@ -541,10 +541,10 @@ class Renter(User):
         Args:
             val (bool): Rental status.
         """
-        cursor = connection.mysql_connection.cursor()
-        update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
-        cursor.execute(update_query, (val, self.id))
-        connection.mysql_connection.commit()
+        # cursor = connection.mysql_connection.cursor()
+        # update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
+        # cursor.execute(update_query, (val, self.id))
+        # connection.mysql_connection.commit()
         self.canRent = val
 
 
