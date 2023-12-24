@@ -122,7 +122,7 @@ class CarHire:
         """
                 Creates a filter button within the filter frame.
                 """
-        filter_button = tk.Button(self.filter_frame, text="Filter", width=15, height=3, command=self.check_data(), font=("Arial", 12))
+        filter_button = tk.Button(self.filter_frame, text="Filter", width=15, height=3, command=self.check_data, font=("Arial", 12))
         filter_button.grid(row=1, column=0, columnspan=1, rowspan=3, padx=20, pady=10)
 
     def apply_filter(self):

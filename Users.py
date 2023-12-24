@@ -674,5 +674,10 @@ class Registration:
         except Exception as err:
             print(f'Can`t register.')
 
-
+# cred = Credential("Harry", "Potter123")
+# cred.upload_to_database_new("Potter123", 1)
+# cred = Credential("Hermione", "Granger321")
+# cred.upload_to_database_new("Granger321", 2)
+# cred = Credential("Ron", "Weasley312")
+# cred.upload_to_database_new("Weasley312", 3)
 
