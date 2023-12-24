@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+
+import couchdb
+
 from CarDomain import Car
 from Users import Renter, CompanyWorker, BaseInfo
 from typing import Dict
@@ -76,25 +79,36 @@ class Rent:
             rent_id = cursor.lastrowid
             if rent_id is not None:
                 self.rent_id = rent_id
-            # Якщо вивантаження в базу пройшло успішно, повертаємо True
+
+            # Отримуємо існуючий документ в CouchDB
             db = connection.couchdb_connection['car_hire']
-            new_document = {
-               "_id": self.agreement,
-               "documentLocation": self.agreement_location,
-               "rentId": self.rent_id
-            }
-            response = db.save(new_document)
-            if response:
-               print("Document added to CouchDB successfully.")
+            existing_document = db.get(self.agreement)
+
+            if existing_document:
+                # Якщо документ існує, оновлюємо його
+                existing_document['rentId'] = self.rent_id
+                existing_document['documentLocation'] = self.agreement_location
+                db.save(existing_document)
+                print("Document in CouchDB updated successfully.")
             else:
-               print(f'Failed to add document to CouchDB. Response: {response}')
+                # Якщо документу не існує, додаємо його
+                new_document = {
+                    "_id": self.agreement,
+                    "documentLocation": self.agreement_location,
+                    "rentId": self.rent_id
+                }
+                db.save(new_document)
+                print("Document added to CouchDB successfully.")
+
             return True
+        except couchdb.ResourceConflict as e:
+            # Обробка конфлікту оновлення документу в CouchDB
+            print(f"Document update conflict in CouchDB. Error: {e}")
+            return False
         except Exception as e:
-            # Якщо сталася помилка, повертаємо False
+            # Якщо сталася інша помилка, повертаємо False
             print(f'Failed to upload rent info to MySQL. Error: {e}')
             return False
-
-
 
     def upload_to_database_existing(self):
         """
