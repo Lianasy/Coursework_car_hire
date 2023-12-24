@@ -80,27 +80,32 @@ class Rent:
             if rent_id is not None:
                 self.rent_id = rent_id
 
-            # Отримуємо існуючий документ в CouchDB
-            db = connection.couchdb_connection['car_hire']
-            existing_document = db.get(self.agreement)
+                self.generate_agreement()
+                self.generate_agreement_location()
 
-            if existing_document:
-                # Якщо документ існує, оновлюємо його
-                existing_document['rentId'] = self.rent_id
-                existing_document['documentLocation'] = self.agreement_location
-                db.save(existing_document)
-                print("Document in CouchDB updated successfully.")
+                # Отримуємо існуючий документ в CouchDB
+                db = connection.couchdb_connection['car_hire']
+                existing_document = db.get(self.agreement)
+
+                if existing_document:
+                    # Якщо документ існує, оновлюємо його
+                    existing_document['rentId'] = self.rent_id
+                    existing_document['documentLocation'] = self.agreement_location
+                    db.save(existing_document)
+                    print("Document in CouchDB updated successfully.")
+                else:
+                    # Якщо документу не існує, додаємо його
+                    new_document = {
+                        "_id": self.agreement,
+                        "documentLocation": self.agreement_location,
+                        "rentId": self.rent_id
+                    }
+                    db.save(new_document)
+                    print("Document added to CouchDB successfully.")
+
+                return True
             else:
-                # Якщо документу не існує, додаємо його
-                new_document = {
-                    "_id": self.agreement,
-                    "documentLocation": self.agreement_location,
-                    "rentId": self.rent_id
-                }
-                db.save(new_document)
-                print("Document added to CouchDB successfully.")
-
-            return True
+                return False
         except couchdb.ResourceConflict as e:
             # Обробка конфлікту оновлення документу в CouchDB
             print(f"Document update conflict in CouchDB. Error: {e}")
@@ -300,8 +305,6 @@ class RenterController:
                     discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
                     start_time=datetime.now().date(),
                     end_time=datetime.now().date() + timedelta(days=days_for_rent))
-        rent.generate_agreement()
-        rent.generate_agreement_location()
         rent.upload_to_database_new()
         car.set_rent_status('IN_RENT')
         self.renter.set_rent_ability(False)
