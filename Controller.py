@@ -197,7 +197,7 @@ class RenterController:
             float: Deposit amount.
         """
         driving_exp = self.renter.count_driver_experience()
-        return 0.9 * car_price / driving_exp
+        return 0.9 * float(car_price) / driving_exp
 
     def get_available_cars(self) -> list[Car]:
         """
