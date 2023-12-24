@@ -74,14 +74,14 @@ class CarDocument:
 
 
 class Car:
-    def __init__(self, carId: int, carNumber: str | None = None, carModel: str | None = None,
+    def __init__(self, carId: int | None = None, carNumber: str | None = None, carModel: str | None = None,
                  rentPrice: float | None = None, rentStatus: bool | None = None,
                  carType: str | None = None, documents: list[CarDocument] | None = None) -> None:
         """
         Initializes the Car object with optional parameters.
 
         Args:
-            carId (int): The unique identifier for the car.
+            carId (int | None): The unique identifier for the car.
             carNumber (str | None): Car registration number.
             carModel (str | None): Car model.
             rentPrice (float | None): Rental price per day.
@@ -97,16 +97,17 @@ class Car:
         self.carType: str | None = carType
         self.documents: list[CarDocument] | None = documents
 
-    def upload_car_info(self) -> None:
+    def upload_car_info_new(self) -> None:
         """
         Uploads car information to the database.
         """
         try:
             cursor = connection.mysql_connection.cursor()
-            insert_query = "INSERT INTO car (carId, carNumber, carModel, rentPrice, rentStatus, carType) VALUES (%s, %s, %s, %s, %s, %s)"
-            car_data = (self.carId, self.carNumber, self.carModel, self.rentPrice, self.rentStatus, self.carType)
+            insert_query = "INSERT INTO car (carNumber, carModel, rentPrice, rentStatus, carType) VALUES (%s, %s, %s, %s, %s, %s)"
+            car_data = (self.carNumber, self.carModel, self.rentPrice, self.rentStatus, self.carType)
             cursor.execute(insert_query, car_data)
             connection.mysql_connection.commit()
+            self.carId = cursor.lastrowid
 
         except Exception as e:
             print(f"Помилка при взаємодії з базою даних: {e}")
@@ -147,6 +148,10 @@ class Car:
         Args:
             new_rent_status (bool): New rental status.
         """
+        cursor = connection.mysql_connection.cursor()
+        update_query = "UPDATE car SET rentStatus = %s WHERE userId = %s"
+        cursor.execute(update_query, (new_rent_status, self.carId))
+        connection.mysql_connection.commit()
         self.rentStatus = new_rent_status
 
     def add_document(self, document: CarDocument) -> None:

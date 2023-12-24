@@ -290,7 +290,6 @@ class RenterController:
         rent.generate_agreement_location()
         rent.upload_to_database_new()
         car.set_rent_status('IN_RENT')
-        car.upload_car_info()
         self.renter.set_rent_ability(False)
         return True
         # else:
