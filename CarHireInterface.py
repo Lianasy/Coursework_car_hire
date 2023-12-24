@@ -219,6 +219,7 @@ class CarHire:
 
         Parameters:
             days (str): Number of days for car rental.
+            :param car:
         """
         # Logic to rent a car for the specified number of days
         rent = self.controller.rent_car(car, days)
