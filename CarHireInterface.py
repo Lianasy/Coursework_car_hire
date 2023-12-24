@@ -5,6 +5,7 @@ from CarDomain import Car
 
 class CarHire:
     def __init__(self, root, controller):
+        self.controller = controller
         self.inner_frame = None
         self.filter_frame = None
         self.selected_car_type = None
@@ -12,7 +13,6 @@ class CarHire:
         self.min_entry = None
         self.root = root
         self.setup_ui()
-        self.controller = controller
 
     def setup_ui(self):
         """
