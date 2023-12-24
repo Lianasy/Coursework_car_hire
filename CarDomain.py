@@ -149,7 +149,7 @@ class Car:
             new_rent_status (bool): New rental status.
         """
         cursor = connection.mysql_connection.cursor()
-        update_query = "UPDATE car SET rentStatus = %s WHERE userId = %s"
+        update_query = "UPDATE car SET rentStatus = %s WHERE carId = %s"
         cursor.execute(update_query, (new_rent_status, self.carId))
         connection.mysql_connection.commit()
         self.rentStatus = new_rent_status
