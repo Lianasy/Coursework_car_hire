@@ -431,12 +431,13 @@ class Renter(User):
             cursor = connection.mysql_connection.cursor()
             self.load_base_info()
             self.load_private_info()
-            query = f"SELECT registrationDate, driverLicenceDate FROM renter WHERE userId = {self.id}"
+            query = f"SELECT registrationDate, driverLicenceDate, canRent FROM renter WHERE userId = {self.id}"
             cursor.execute(query)
             result = cursor.fetchone()
 
             if result:
-                date1, date2 = result
+                date1, date2, rentability = result
+                self.canRent = rentability
                 if isinstance(date1, str):
                     try:
                         self.registrationDate = datetime.strptime(date1, "%Y-%m-%d")
@@ -560,10 +561,10 @@ class Renter(User):
         Args:
             val (bool): Rental status.
         """
-        # cursor = connection.mysql_connection.cursor()
-        # update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
-        # cursor.execute(update_query, (val, self.id))
-        # connection.mysql_connection.commit()
+        cursor = connection.mysql_connection.cursor()
+        update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
+        cursor.execute(update_query, (val, self.id))
+        connection.mysql_connection.commit()
         self.canRent = val
 
 
