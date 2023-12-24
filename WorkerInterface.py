@@ -96,7 +96,7 @@ class EmployeeInterface:
         label_drivers.grid(row=1, column=0, padx=(frame_padx_left, frame_padx_right), pady=(20, frame_pady_bottom // 2))
 
         self.frame_drivers = tk.Frame(self.inner_frame, width=frame_width, height=frame_height, bg="white")
-        self.frame_drivers.grid(row=2, column=0, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom))
+        self.frame_drivers.grid(row=2, column=0, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
         self.drivers_table(users)
 
         label_cars = tk.Label(self.inner_frame, text="Cars", font=("Arial", 12))
@@ -111,7 +111,7 @@ class EmployeeInterface:
                              pady=(20, frame_pady_bottom // 2))
 
         frame_contracts = tk.Frame(self.inner_frame, width=frame_width + 100, height=frame_height, bg="white")
-        frame_contracts.grid(row=2, column=2, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom))
+        frame_contracts.grid(row=2, column=2, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
         self.contracts_table(frame_contracts, expired_rents)
 
         # Додано сітки грід в кожний фрейм
@@ -265,7 +265,7 @@ class EmployeeInterface:
             label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
 
         for idx, rent in enumerate(expired_rents, start=1):
-            rent_info = [rent.firstName, rent.lastName, rent.carNumber, rent.isRentFinished, rent.rentExpirationDate]
+            rent_info = [rent.firstName, rent.lastName, rent.carNumber, rent.isRentFinished, rent.end_time]
             for i, info in enumerate(rent_info):
                 label = tk.Label(frame, text=info, font=("Arial", 9), bg="white")
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
