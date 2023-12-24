@@ -294,23 +294,18 @@ class EmployeeInterface:
                 Filters cars based on selected criteria.
                 """
 
-        self.selected_rental_statuses.clear()
-        self.selected_types.clear()
+        # self.selected_rental_statuses.clear()
+        # self.selected_types.clear()
 
-        for i, var1 in enumerate(self.optionsRental_vars):
-            if var1.get() == 1:
-                self.selected_rental_statuses.append(self.optionsRental[i])
+        selected_rental_statuses = [self.optionsRental[i] for i, val in enumerate(self.optionsRental_vars) if val.get()]
+        selected_types = [self.optionsType[i] for i, val in enumerate(self.optionsType_vars) if val.get()]
 
-        for i, var2 in enumerate(self.optionsType_vars):
-            if var2.get() == 1:
-                self.selected_types.append(self.optionsType[i])
+        self.apply_cars_filter(selected_rental_statuses, selected_types)
 
-        self.apply_cars_filter()
-
-    def apply_cars_filter(self):
+    def apply_cars_filter(self, selected_rental_statuses, selected_types):
         """
                 Applies filters to the cars' table.
                 """
-        cars = self.controller.get_filtered_cars(self.selected_rental_statuses, self.selected_types)
+        cars = self.controller.get_filtered_cars(selected_rental_statuses, selected_types)
         self.cars_table(cars)
 
