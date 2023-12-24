@@ -308,7 +308,7 @@ class CarHire:
                 price = cars[id_counter].rentPrice
                 model = cars[id_counter].carModel
                 car_type = cars[id_counter].carType
-                deposit = self.controller.calculate_deposit()
+                deposit = self.controller.calculate_deposit(price)
                 label_temp = tk.Label(cell_frame, text=f"                      ")
                 label_temp.grid(row=0, column=3)
                 label_temp2 = tk.Label(cell_frame, text=f"                                                    ")
