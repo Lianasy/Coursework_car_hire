@@ -512,7 +512,7 @@ class ManagerController:
             cursor = connection.mysql_connection.cursor()
 
             query = """
-                        SELECT rent.rentId, rent.userId, rent.shortTermAgreement, rent.carId, rent.price, rent.deposit,
+                        SELECT rent.rentId, rent.userId, rent.carId, rent.price, rent.deposit,
                         rent.startTIme, rent.endTime, rent.isFinish, rent.discount, 
                         baseUserInfo.firstName, baseUserInfo.lastName 
                         FROM rent, baseUserInfo
