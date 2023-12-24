@@ -167,16 +167,22 @@ class Rent:
 
         if self.rent_id is not None:
             try:
+                if self.user_id is None:
+                    self.load_from_database()
                 cursor = connection.mysql_connection.cursor()
-                update_query = "UPDATE rent SET isFinish = %s WHERE rentId = %s"
-                cursor.execute(update_query, (set_finished, self.rent_id))
+                update_query_1 = "UPDATE rent SET isFinish = %s WHERE rentId = %s"
+                update_query_2 = "UPDATE renter SET canRent = %s WHERE userId = %s"
+                update_query_3 = "UPDATE car SET rentStatus = %s WHERE carId = %s"
+                cursor.execute(update_query_1, (set_finished, self.rent_id))
+                cursor.execute(update_query_2, ('True', self.user_id))
+                cursor.execute(update_query_3, ('AVAILABLE', self.car_id))
                 connection.mysql_connection.commit()
 
                 # Оновлення атрибута об'єкту
                 self.isRentFinished = set_finished
 
             except Exception as e:
-                print(f'Failed to update rent status in MySQL. Error: {e}')
+                print(f'Failed to update rent, renter and car status in MySQL. Error: {e}')
 
 
 class RenterController:
