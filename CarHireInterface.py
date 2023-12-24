@@ -222,7 +222,7 @@ class CarHire:
             :param car:
         """
         # Logic to rent a car for the specified number of days
-        rent = self.controller.rent_car(car, days)
+        rent = self.controller.rent_car(car, int(days))
 
         # Hide widgets instead of destroying them
         for widget in self.root.winfo_children():
@@ -280,8 +280,14 @@ class CarHire:
 
                 label_deposit = tk.Label(cell_frame, text=f"Deposit: {deposit}", font=("Arial", 12))
                 label_deposit.grid(row=4, column=2, columnspan=3)
-                filter_button = tk.Button(cell_frame, text="Rent", width=15, height=3,
-                                          command=self.rent_apply(cars[id_counter]), font=("Arial", 12))
+                filter_button = tk.Button(
+                    cell_frame,
+                    text="Rent",
+                    width=15,
+                    height=3,
+                    command=lambda car=cars[id_counter]: self.rent_apply(car),
+                    font=("Arial", 12)
+                )
                 filter_button.grid(row=5, column=2, columnspan=3, rowspan=3, pady=(0, 10))
                 id_counter = id_counter + 1
 
@@ -299,9 +305,9 @@ class CarHire:
                 img = img.subsample(3, 3)
                 label_img.config(image=img)
                 label_img.image = img  # Keep a reference to prevent garbage collection
-                price = cars[id_counter].rentPrice()
-                model = cars[id_counter].carModel()
-                car_type = cars[id_counter].carType()
+                price = cars[id_counter].rentPrice
+                model = cars[id_counter].carModel
+                car_type = cars[id_counter].carType
                 deposit = self.controller.calculate_deposit()
                 label_temp = tk.Label(cell_frame, text=f"                      ")
                 label_temp.grid(row=0, column=3)
