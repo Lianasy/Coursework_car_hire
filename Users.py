@@ -591,9 +591,9 @@ class LogIn:
         """
         self.creds: Credential = Credential(login, password)
         self.successful = False
+        self.user = None
         id: int | None = self.creds.get_id()
         if id is not None:
-            self.successful = True
             try:
                 cursor = connection.mysql_connection.cursor()
                 query = f"SELECT userId FROM companyWorker WHERE userId = {id}"
@@ -602,6 +602,7 @@ class LogIn:
                 if result_company_worker:
                     self.user: CompanyWorker = CompanyWorker(id)
                     self.user.load_from_database()
+                    self.successful = True
 
                 else:
                     query1 = f"SELECT userId FROM renter WHERE userId = {id}"
@@ -610,8 +611,9 @@ class LogIn:
                     if result_renter:
                         self.user: Renter = Renter(id)
                         self.user.load_from_database()
+                        self.successful = True
             except Exception as e:
-                print(f'Error checking company worker existence: {e}')
+                print(f'Error checking company worker/renter existence: {e}')
 
     def check_user_role(self) -> str:
         """
