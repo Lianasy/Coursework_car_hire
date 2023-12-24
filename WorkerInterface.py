@@ -150,11 +150,11 @@ class EmployeeInterface:
         self.optionsRentability_vars = []
 
         for i, option in enumerate(options, start=2):
-            var = tk.IntVar(value=0)
+            varRentability = tk.IntVar(value=0)
             checkbox = tk.Checkbutton(frame_drivers_top, text=option, font=("Arial", 10), bg="white", fg="black",
-                                      variable=var)
+                                      variable=varRentability)
             checkbox.grid(row=i, column=4, padx=5, pady=5, sticky="w")
-            self.optionsRentability_vars.append(var)
+            self.optionsRentability_vars.append(varRentability)
 
     def fill_cars_top_frame(self):
         """
@@ -180,30 +180,30 @@ class EmployeeInterface:
         labeltemp = tk.Label(frame_cars_top, text="     ", font=("Arial", 10), bg="white", fg="black")
         labeltemp.grid(row=0, column=1, padx=5, pady=5)
 
-        self.optionsRental = ["Rental status 1", "Rental status 2"]
+        self.optionsRental = ["IN_RENT", "AVAILABLE", "SERVICED"]
         self.optionsRental_vars = []  # Додано ініціалізацію змінної self.optionsRental_vars
 
-        for i, option in enumerate(self.optionsRental, start=2):
-            var = tk.IntVar(value=0)
+        for i, option in enumerate(self.optionsRental, start=1):
+            var1 = tk.IntVar(value=0)
             checkbox = tk.Checkbutton(frame_cars_top, text=option, font=("Arial", 10), bg="white", fg="black",
-                                      variable=var)
+                                      variable=var1)
             checkbox.grid(row=i, column=2, padx=5, pady=5, sticky="w")
-            self.optionsRental_vars.append(var)  # Додано до списку self.optionsRental_vars
+            self.optionsRental_vars.append(var1)  # Додано до списку self.optionsRental_vars
 
         label_type = tk.Label(frame_cars_top, text="Type:", font=("Arial", 10), bg="white", fg="black")
         label_type.grid(row=0, column=4, padx=5, pady=5)
         labeltemp = tk.Label(frame_cars_top, text="     ", font=("Arial", 10), bg="white", fg="black")
         labeltemp.grid(row=0, column=3, padx=5, pady=5)
 
-        self.optionsType = ["Standard", "Premium", "Economy", "Truck"]
+        self.optionsType = ["STANDART", "PREMIUM", "ECONOMY", "TRUCK"]
         self.optionsType_vars = []  # Додано ініціалізацію змінної self.optionsType_vars
 
-        for i, option in enumerate(self.optionsType, start=2):
-            var = tk.IntVar(value=0)
+        for i, option in enumerate(self.optionsType, start=1):
+            var2 = tk.IntVar(value=0)
             checkbox = tk.Checkbutton(frame_cars_top, text=option, font=("Arial", 10), bg="white", fg="black",
-                                      variable=var)
+                                      variable=var2)
             checkbox.grid(row=i, column=4, padx=5, pady=5, sticky="w")
-            self.optionsType_vars.append(var)
+            self.optionsType_vars.append(var2)
 
     def drivers_table(self, users):
         """
@@ -276,9 +276,9 @@ class EmployeeInterface:
                 """
         self.selected_rentability = []
 
-        for i, var in enumerate(self.optionsRentability_vars):
-            if var.get() == 1:
-                self.selected_rentability.append(True if i == 2 else False)
+        for i, varRentability in enumerate(self.optionsRentability_vars):
+            if varRentability.get() == 1:
+                self.selected_rentability.append(True if i == 0 else False)
 
         self.apply_drivers_filter()
 
@@ -297,12 +297,12 @@ class EmployeeInterface:
         self.selected_rental_statuses.clear()
         self.selected_types.clear()
 
-        for i, var in enumerate(self.optionsRental_vars):
-            if var.get() == 1:
+        for i, var1 in enumerate(self.optionsRental_vars):
+            if var1.get() == 1:
                 self.selected_rental_statuses.append(self.optionsRental[i])
 
-        for i, var in enumerate(self.optionsType_vars):
-            if var.get() == 1:
+        for i, var2 in enumerate(self.optionsType_vars):
+            if var2.get() == 1:
                 self.selected_types.append(self.optionsType[i])
 
         self.apply_cars_filter()
@@ -311,6 +311,6 @@ class EmployeeInterface:
         """
                 Applies filters to the cars' table.
                 """
-        cars = self.controller.get_cars_filtered(self.selected_rental_statuses, self.selected_types)
+        cars = self.controller.get_filtered_cars(self.selected_rental_statuses, self.selected_types)
         self.cars_table(cars)
 
