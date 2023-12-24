@@ -501,19 +501,22 @@ class ManagerController:
 
         return filtered_cars
 
-    def get_expired_rents(self) -> list[Rent]:
+    def get_expired_rents(self) -> list[tuple(str, str, Rent)]:
         """
         Retrieves a list of expired rents from the Rent table in the database.
 
         Returns:
-            list[Rent]: List of expired rents.
+            list[tuple(str, str, Rent)]: List of user's first name, last name and expired rents.
         """
         try:
             cursor = connection.mysql_connection.cursor()
 
             query = """
-                        SELECT * FROM rent
-                        WHERE endTime < NOW() AND isFinish = 0
+                        SELECT rent.rentId, rent.userId, rent.shortTermAgreement, rent.carId, rent.price, rent.deposit,
+                        rent.startTIme, rent.endTime, rent.isFinish, rent.discount, 
+                        baseUserInfo.firstName, baseUserInfo.lastName 
+                        FROM rent, baseUserInfo
+                        WHERE endTime < NOW() AND isFinish = 0 AND rent.userId = baseUserInfo.userId
                     """
 
             cursor.execute(query)
@@ -533,8 +536,9 @@ class ManagerController:
                     discount=row[8],
                     # Інші атрибути, які можна отримати з результатів запиту
                 )
-
-                expired_rents.append(rent)
+                users_first_name = row[9]
+                users_last_name = row[10]
+                expired_rents.append(tuple(users_first_name, users_last_name, rent))
 
             return expired_rents
 
