@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from Controller import Rent
+
 
 class EmployeeInterface:
     # Initializing attributes and setting up the interface
@@ -249,14 +251,14 @@ class EmployeeInterface:
                 label = tk.Label(self.frame_cars, text=info, font=("Arial", 9), bg="white")
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
 
-    def contracts_table(self, frame, expired_rents):
+    def contracts_table(self, frame, expired_rents: list[tuple[str, str, Rent]]):
         """
-                Creates a table to display contract information.
+        Creates a table to display contract information.
 
-                Parameters:
-                    frame (tk.Frame): Frame to place the contract table.
-                    expired_rents (list[Rent]): List of expired Rent objects.
-                """
+        Parameters:
+            frame (tk.Frame): Frame to place the contract table.
+            expired_rents (list[tuple[str, str, Rent]]): List of expired Rent objects.
+        """
 
         labels_contracts = ["First name", "Last name", "Car number", "Rental status", "Rental expiration date"]
 
@@ -265,7 +267,7 @@ class EmployeeInterface:
             label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
 
         for idx, rent in enumerate(expired_rents, start=1):
-            rent_info = [rent.firstName, rent.lastName, rent.carNumber, rent.isRentFinished, rent.end_time]
+            rent_info = [rent[0], rent[1], rent[2].car_id, rent[2].isRentFinished, rent[2].end_time]
             for i, info in enumerate(rent_info):
                 label = tk.Label(frame, text=info, font=("Arial", 9), bg="white")
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")

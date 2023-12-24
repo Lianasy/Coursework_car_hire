@@ -465,10 +465,10 @@ class LoggingInterface:
         new_login = self.entry_login.get()
         new_password = self.entry_password.get()
         registration_info = {
-                'privateInfo': {'photo': self.entry_photo, 'passportID': self.entry_passport, 'phoneNumber': self.entry_phone, 'email': self.entry_email, 'driverLicence' : self.entry_licence},
-                'baseInfo': {'firstName': self.entry_name, 'lastName': self.entry_lname, 'birthDate': self.entry_birth_date},
-                'driverLicenseDate': self.entry_licence_date,
-                'credentials': {'login': self.entry_login, 'password': self.entry_password}
+                'privateInfo': {'photo': self.entry_photo.get(), 'passportID': self.entry_passport.get(), 'phoneNumber': self.entry_phone.get(), 'email': self.entry_email.get(), 'driverLicence' : self.entry_licence.get()},
+                'baseInfo': {'firstName': self.entry_name.get(), 'lastName': self.entry_lname.get(), 'birthDate': self.entry_birth_date.get()},
+                'driverLicenseDate': self.entry_licence_date.get(),
+                'credentials': {'login': self.entry_login.get(), 'password': self.entry_password.get()}
             }
         user_registration = Registration(registration_info)
         if user_registration.successful:
