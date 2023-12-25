@@ -460,6 +460,26 @@ class Renter(User):
             else:
                 print(f'Renter with id {self.id} not found in the database.')
 
+    def upload_to_database_new(self) -> bool:
+        """
+        Uploads renter's information to the database for new user.
+
+        Returns:
+            bool: True if the upload was successful, False otherwise.
+        """
+        try:
+            cursor = connection.mysql_connection.cursor()
+            insert_query = "INSERT INTO renter (userId, registrationDate, driverLicenceDate) VALUES (%s, %s, %s)"
+            user_data = (self.id, self.registrationDate, self.driverLicenseDate)
+            cursor.execute(insert_query, user_data)
+            connection.mysql_connection.commit()
+            # Якщо вивантаження в базу пройшло успішно, повертаємо True
+            return True
+        except Exception as e:
+            # Якщо сталася помилка, повертаємо False
+            print(f"Failed to upload renter's info for user {self.id} to db. Error: {e}")
+            return False
+
     def register(self, args: Dict[str, Dict[str, str] | datetime]) -> bool:
         """
         Registers a new renter and inserts their information into the database.
@@ -496,6 +516,8 @@ class Renter(User):
             self.creds = Credential(args['credentials']['login'])
             if not self.creds.upload_to_database_new(args['credentials']['password'], self.id):
                 raise ConnectionError("Error occurred when trying to add a new user to Credentials table")
+            if not self.upload_to_database_new():
+                raise ConnectionError("Error occured when trying to add a new renter to Renter table")
             return True
         except Exception as e:
             print(f'Failed to load renter information from the database. Error: {e}')
