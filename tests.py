@@ -1,8 +1,12 @@
 import unittest
 from datetime import datetime
+from unittest.mock import MagicMock
+from CarDomain import Car, CarDocument
 from Users import BaseInfo, Credential, PrivateInfo, User, Renter, CompanyWorker, LogIn, Registration
 import io
 import sys
+from WorkerInterface import EmployeeInterface
+import tkinter as tk
 
 class TestBaseInfo(unittest.TestCase):
 
@@ -375,6 +379,10 @@ class TestRegistration(unittest.TestCase):
         output_text = self.held_output.read().strip()
         expected_output = 'Can`t register.'
         self.assertEqual(output_text, expected_output)
+
+
+
+
 
 
 if __name__ == '__main__':

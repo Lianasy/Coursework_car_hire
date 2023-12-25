@@ -97,23 +97,23 @@ class CarHire:
         car_type_label = tk.Label(self.filter_frame, text="Car type", font=("Arial", 12))
         car_type_label.grid(row=0, column=8, columnspan=3, pady=(10, 5))
 
-        self.selected_car_type = tk.StringVar(value="Standard")  # Variable to store the selected car type
+        self.selected_car_type = tk.StringVar(value="STANDART")  # Variable to store the selected car type
 
-        car_type_options = ["Standard", "Premium", "Economy", "Truck"]
-        tk.Radiobutton(self.filter_frame, text="Standard", variable=self.selected_car_type, value="Standard").grid(
+        car_type_options = ["STANDART", "PREMIUM", "ECONOMY", "TRUCK"]
+        tk.Radiobutton(self.filter_frame, text="STANDART", variable=self.selected_car_type, value="STANDART").grid(
             row=1,
             column=8,
             columnspan=1,
             padx=5)
-        tk.Radiobutton(self.filter_frame, text="Premium", variable=self.selected_car_type, value="Premium").grid(row=2,
+        tk.Radiobutton(self.filter_frame, text="PREMIUM", variable=self.selected_car_type, value="PREMIUM").grid(row=2,
                                                                                                                  column=8,
                                                                                                                  columnspan=1,
                                                                                                                  padx=5)
-        tk.Radiobutton(self.filter_frame, text="Economy", variable=self.selected_car_type, value="Economy").grid(row=1,
+        tk.Radiobutton(self.filter_frame, text="ECONOMY", variable=self.selected_car_type, value="ECONOMY").grid(row=1,
                                                                                                                  column=9,
                                                                                                                  columnspan=1,
                                                                                                                  padx=5)
-        tk.Radiobutton(self.filter_frame, text="Truck", variable=self.selected_car_type, value="Truck").grid(row=2,
+        tk.Radiobutton(self.filter_frame, text="TRUCK", variable=self.selected_car_type, value="TRUCK").grid(row=2,
                                                                                                              column=9,
                                                                                                              columnspan=1,
                                                                                                              padx=5)
@@ -134,7 +134,7 @@ class CarHire:
         selected_type = self.selected_car_type.get()  # Get the selected car type
         for widget in self.inner_frame.winfo_children():
             widget.destroy()
-        cars = self.controller.get_filtered_cars((min_value, max_value), selected_type)
+        cars = self.controller.get_filtered_cars((float(min_value), float(max_value)), selected_type)
         car_num = len(cars)
         rows = int(car_num / 3)
         last_row = car_num % 3

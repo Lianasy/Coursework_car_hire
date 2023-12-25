@@ -291,23 +291,24 @@ class EmployeeInterface:
         users = self.controller.get_filtered_users(self.selected_rentability)
         self.drivers_table(users)
 
+
     def filter_cars(self):
         """
-                Filters cars based on selected criteria.
-                """
-
-        # self.selected_rental_statuses.clear()
-        # self.selected_types.clear()
-
-        selected_rental_statuses = [self.optionsRental[i] for i, val in enumerate(self.optionsRental_vars) if val.get()]
-        selected_types = [self.optionsType[i] for i, val in enumerate(self.optionsType_vars) if val.get()]
-
-        self.apply_cars_filter(selected_rental_statuses, selected_types)
-
-    def apply_cars_filter(self, selected_rental_statuses, selected_types):
+        Filters cars based on selected criteria.
         """
-                Applies filters to the cars' table.
-                """
-        cars = self.controller.get_filtered_cars(selected_rental_statuses, selected_types)
+        self.selected_rental_statuses.clear()
+        self.selected_types.clear()
+        self.selected_rental_statuses = [self.optionsRental[i] for i, val in enumerate(self.optionsRental_vars) if
+                                         val.get()]
+        self.selected_types = [self.optionsType[i] for i, val in enumerate(self.optionsType_vars) if val.get()]
+
+        self.apply_cars_filter()
+
+    def apply_cars_filter(self):
+        """
+        Applies filters to the cars' table.
+        """
+        cars = self.controller.get_filtered_cars(self.selected_rental_statuses, self.selected_types)
         self.cars_table(cars)
+
 
