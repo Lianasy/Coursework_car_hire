@@ -167,16 +167,22 @@ class Rent:
 
         if self.rent_id is not None:
             try:
+                if self.user_id is None:
+                    self.load_from_database()
                 cursor = connection.mysql_connection.cursor()
-                update_query = "UPDATE rent SET isFinish = %s WHERE rentId = %s"
-                cursor.execute(update_query, (set_finished, self.rent_id))
+                update_query_1 = "UPDATE rent SET isFinish = %s WHERE rentId = %s"
+                update_query_2 = "UPDATE renter SET canRent = %s WHERE userId = %s"
+                update_query_3 = "UPDATE car SET rentStatus = %s WHERE carId = %s"
+                cursor.execute(update_query_1, (set_finished, self.rent_id))
+                cursor.execute(update_query_2, ('True', self.user_id))
+                cursor.execute(update_query_3, ('AVAILABLE', self.car_id))
                 connection.mysql_connection.commit()
 
                 # Оновлення атрибута об'єкту
                 self.isRentFinished = set_finished
 
             except Exception as e:
-                print(f'Failed to update rent status in MySQL. Error: {e}')
+                print(f'Failed to update rent, renter and car status in MySQL. Error: {e}')
 
 
 class RenterController:
@@ -300,17 +306,17 @@ class RenterController:
         Returns:
             bool: True if rent was successfully added, False otherwise.
         """
-        # if self.renter.canRent:
-        rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
-                    discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
-                    start_time=datetime.now().date(),
-                    end_time=datetime.now().date() + timedelta(days=days_for_rent))
-        rent.upload_to_database_new()
-        car.set_rent_status('IN_RENT')
-        self.renter.set_rent_ability(False)
-        return True
-        # else:
-        #     return False
+        if self.renter.canRent:
+            rent = Rent(user_id=self.renter.id, car_id=car.carId, price=car.rentPrice * days_for_rent,
+                        discount=self.calculate_discount(), deposit=self.calculate_deposit(car.rentPrice),
+                        start_time=datetime.now().date(),
+                        end_time=datetime.now().date() + timedelta(days=days_for_rent))
+            rent.upload_to_database_new()
+            car.set_rent_status('IN_RENT')
+            self.renter.set_rent_ability(False)
+            return True
+        else:
+            return False
 
 
 class ManagerController:
@@ -360,8 +366,8 @@ class ManagerController:
             cursor = connection.mysql_connection.cursor()
 
             query = """
-                    SELECT renter.userId, renter.registrationDate, renter.driverLicenceDate, baseUserInfo.userId, 
-                    baseUserInfo.firstName, baseUserInfo.lastName, baseUserInfo.birthDate
+                    SELECT renter.userId, renter.registrationDate, renter.driverLicenceDate, renter.canRent, 
+                    baseUserInfo.userId, baseUserInfo.firstName, baseUserInfo.lastName, baseUserInfo.birthDate
                     FROM renter
                     JOIN baseUserInfo ON renter.userId = baseUserInfo.userId
                 """
@@ -371,12 +377,12 @@ class ManagerController:
 
             renters = []
             for row in results:
-                renter_id, registration_date, driver_license_date, renter_id, first_name, last_name, birth_date = row
+                renter_id, registration_date, driver_license_date, can_rent, renter_id, first_name, last_name, birth_date = row
                 base_info = BaseInfo(renter_id, first_name, last_name, birth_date)
                 renter = Renter(renter_id, base_info, None)
                 renter.registrationDate = registration_date
                 renter.driverLicenseDate = driver_license_date
-                renter.canRent = True
+                renter.canRent = can_rent
 
                 renters.append(renter)
             self.users = renters

@@ -431,12 +431,13 @@ class Renter(User):
             cursor = connection.mysql_connection.cursor()
             self.load_base_info()
             self.load_private_info()
-            query = f"SELECT registrationDate, driverLicenceDate FROM renter WHERE userId = {self.id}"
+            query = f"SELECT registrationDate, driverLicenceDate, canRent FROM renter WHERE userId = {self.id}"
             cursor.execute(query)
             result = cursor.fetchone()
 
             if result:
-                date1, date2 = result
+                date1, date2, rentability = result
+                self.canRent = rentability
                 if isinstance(date1, str):
                     try:
                         self.registrationDate = datetime.strptime(date1, "%Y-%m-%d")
@@ -458,6 +459,26 @@ class Renter(User):
                     print("Unsupported type. Only str and datetime.date are supported.")
             else:
                 print(f'Renter with id {self.id} not found in the database.')
+
+    def upload_to_database_new(self) -> bool:
+        """
+        Uploads renter's information to the database for new user.
+
+        Returns:
+            bool: True if the upload was successful, False otherwise.
+        """
+        try:
+            cursor = connection.mysql_connection.cursor()
+            insert_query = "INSERT INTO renter (userId, registrationDate, driverLicenceDate) VALUES (%s, %s, %s)"
+            user_data = (self.id, self.registrationDate, self.driverLicenseDate)
+            cursor.execute(insert_query, user_data)
+            connection.mysql_connection.commit()
+            # Якщо вивантаження в базу пройшло успішно, повертаємо True
+            return True
+        except Exception as e:
+            # Якщо сталася помилка, повертаємо False
+            print(f"Failed to upload renter's info for user {self.id} to db. Error: {e}")
+            return False
 
     def register(self, args: Dict[str, Dict[str, str] | datetime]) -> bool:
         """
@@ -495,6 +516,8 @@ class Renter(User):
             self.creds = Credential(args['credentials']['login'])
             if not self.creds.upload_to_database_new(args['credentials']['password'], self.id):
                 raise ConnectionError("Error occurred when trying to add a new user to Credentials table")
+            if not self.upload_to_database_new():
+                raise ConnectionError("Error occured when trying to add a new renter to Renter table")
             return True
         except Exception as e:
             print(f'Failed to load renter information from the database. Error: {e}')
@@ -560,10 +583,10 @@ class Renter(User):
         Args:
             val (bool): Rental status.
         """
-        # cursor = connection.mysql_connection.cursor()
-        # update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
-        # cursor.execute(update_query, (val, self.id))
-        # connection.mysql_connection.commit()
+        cursor = connection.mysql_connection.cursor()
+        update_query = "UPDATE renter SET canRent = %s WHERE userId = %s"
+        cursor.execute(update_query, (val, self.id))
+        connection.mysql_connection.commit()
         self.canRent = val
 
 
