@@ -8,6 +8,7 @@ from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and bu
 from Users import LogIn, Registration
 import Users
 import Controller
+from Connect import connection
 
 
 class LoggingInterface:
@@ -40,6 +41,7 @@ class LoggingInterface:
         self.entry_login = None  # Initialize user login entry field
         self.entry_password = None  # Initialize user password entry field
         self.button_config = BUTTON_CONFIG  # Assign button configuration from imported constants
+        self.create_user()
 
         self.create_interface(config)  # Call the method to create the login interface with provided config
 
@@ -51,6 +53,67 @@ class LoggingInterface:
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")  # Set window size
         self.root.configure(bg=config['background_color'])  # Set background color
         self.logging_user()
+
+    def create_user(self):
+        cred1 = Users.Credential("Harry", "Potter123")
+        cred1.upload_to_database_new("Potter123", 1)
+        cred2 = Users.Credential("Hermione", "Granger321")
+        cred2.upload_to_database_new("Granger321", 2)
+        cred3 = Users.Credential("Ron", "Weasley312")
+        cred3.upload_to_database_new("Weasley312", 3)
+        cred9 = Users.Credential("Sam", "Grey")
+        cred9.upload_to_database_new("Grey", 9)
+        cred14 = Users.Credential("John", "Doe")
+        cred14.upload_to_database_new("Doe", 14)
+        cred15 = Users.Credential("Fred", "Black")
+        cred15.upload_to_database_new("Black", 15)
+        cred16 = Users.Credential("Tom", "123456")
+        cred16.upload_to_database_new("123456", 16)
+        cred17 = Users.Credential("Sara", "Riddle")
+        cred17.upload_to_database_new("Riddle", 17)
+        cred18 = Users.Credential("Bill", "Shief")
+        cred18.upload_to_database_new("Shief", 18)
+
+        db = connection.couchdb_connection['car_hire']
+        for i in range(10):
+            existing_document = db.get(f'car{i+1}')
+            if existing_document:
+                pass
+            else:
+                new_document = {
+                    "_id": f'car{i+1}',
+                    "carId": i+1,
+                      "documents": [
+                        {
+                          "documentId": f'AgreementCar{i+1}',
+                          "documentLocation": f'AgrDocumentCar{i+1}.docx'
+                        },
+                        {
+                          "documentId": f'StatusСardCar{i+1}',
+                          "documentLocation": f'StatusDocumentCar{i+1}.docx'
+                        },
+                        {
+                          "documentId": f'CertifOfRegistrCar{i+1}',
+                          "documentLocation": f'CertDocumentCar{i+1}.docx'
+                        }
+                      ]
+                }
+                db.save(new_document)
+                print("Document added to CouchDB successfully.")
+
+        for i in range(2):
+            existing_document = db.get(f'userId{i + 1}')
+            if existing_document:
+                pass
+            else:
+                new_document = {
+                    "_id": f'userId{i + 1}',
+                    "userId": i + 1,
+                    "documentName": f'AgreementUs{i+1}',
+                      "documentLocation": f'ArgUs{i+1}.docx'
+                }
+                db.save(new_document)
+                print("Document added to CouchDB successfully.")
 
     def clear_interface(self):
         """
