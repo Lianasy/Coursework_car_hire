@@ -3,7 +3,6 @@ import tkcalendar
 import re
 
 from CarHireInterface import CarHire
-from UserInterface import *  # Import the UserInterface class from UserInterface module
 from WorkerInterface import EmployeeInterface
 from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and button configurations
 from Users import LogIn, Registration

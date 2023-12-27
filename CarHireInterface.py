@@ -258,7 +258,7 @@ class CarHire:
                 label_img.grid(row=0, column=0, rowspan=6)  # Займає 4 рядки для зображення
 
                 # Load and assign image to the label
-                img = tk.PhotoImage(file="funny-car-photo-conceptual-art.png")
+                img = tk.PhotoImage(file="photo_2023-12-25_11-43-27.png")
                 img = img.subsample(3, 3)
                 label_img.config(image=img)
                 label_img.image = img  # Keep a reference to prevent garbage collection
@@ -301,7 +301,7 @@ class CarHire:
                 label_img.grid(row=0, column=0, rowspan=6)  # Займає 4 рядки для зображення
 
                 # Load and assign image to the label
-                img = tk.PhotoImage(file="funny-car-photo-conceptual-art.png")
+                img = tk.PhotoImage(file="photo_2023-12-25_11-43-27.png")
                 img = img.subsample(3, 3)
                 label_img.config(image=img)
                 label_img.image = img  # Keep a reference to prevent garbage collection
@@ -324,7 +324,7 @@ class CarHire:
                 label_deposit = tk.Label(cell_frame, text=f"Deposit: {deposit}", font=("Arial", 12))
                 label_deposit.grid(row=4, column=2, columnspan=3)
                 filter_button = tk.Button(cell_frame, text="Rent", width=15, height=3,
-                                          command=self.rent_apply, font=("Arial", 12))
+                                          command=lambda car=cars[id_counter]: self.rent_apply(car), font=("Arial", 12))
                 filter_button.grid(row=5, column=2, columnspan=3, rowspan=3, pady=(0, 10))
                 id_counter = id_counter + 1
 

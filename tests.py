@@ -1,13 +1,11 @@
 import unittest
 from datetime import datetime
 from unittest.mock import MagicMock
-from CarDomain import Car, CarDocument
 from Users import BaseInfo, Credential, PrivateInfo, User, Renter, CompanyWorker, LogIn, Registration
 import io
 import sys
-from WorkerInterface import EmployeeInterface
+from registration_logging import LoggingInterface
 import tkinter as tk
-
 class TestBaseInfo(unittest.TestCase):
 
     def test_initialization(self):
@@ -361,7 +359,7 @@ class TestRegistration(unittest.TestCase):
             'driverLicenseDate': '2020-01-01',
             'credentials': {'login': 'john_doe', 'password': 'secure_password'}
         }
-        self.invalid_args = {}  # Порожній словник, щоб викликати помилку під час реєстрації
+        self.invalid_args = {}
         self.held_output = io.StringIO()
         sys.stdout = self.held_output
 
@@ -369,9 +367,8 @@ class TestRegistration(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
     def test_successful_registration(self):
-        # Симулюємо успішну реєстрацію
         registration_instance = Registration(self.valid_args)
-        self.assertTrue(registration_instance.user.canRent)  # Перевіряємо, що користувач створений
+        self.assertTrue(registration_instance.user.canRent)
 
     def test_unsuccessful_registration(self):
         Registration(self.invalid_args)
@@ -382,6 +379,32 @@ class TestRegistration(unittest.TestCase):
 
 
 
+class TestLoggingInterface(unittest.TestCase):
+
+    def setUp(self):
+        self.root = tk.Tk()
+        self.config = {'button_width_ratio': 0.2, 'button_height_ratio': 0.1, 'background_color': 'white'}
+        self.logging_interface = LoggingInterface(self.root, self.config)
+
+    def tearDown(self):
+        self.root.destroy()
+
+    def test_clear_interface(self):
+        self.logging_interface.clear_interface()
+        self.assertEqual(len(self.root.winfo_children()), 0)
+
+    def test_logging_user(self):
+        self.logging_interface.logging_user()
+
+    def test_create_account(self):
+        self.logging_interface.create_account()
+
+    def test_process_login(self):
+        self.logging_interface.entry_login = MagicMock()
+        self.logging_interface.entry_login.get.return_value = "test_login"
+        self.logging_interface.entry_password = MagicMock()
+        self.logging_interface.entry_password.get.return_value = "test_password"
+        self.logging_interface.process_login()
 
 
 
