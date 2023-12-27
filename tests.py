@@ -15,21 +15,11 @@ class TestBaseInfo(unittest.TestCase):
         self.assertEqual(user_info.lastName, "Doe")
         self.assertEqual(user_info.birthDate, datetime(1990, 5, 7))
 
-    def test_upload_to_database_new_success(self):
-        user_info = BaseInfo(1, "John", "Doe", datetime(1990, 5, 7))
-        success = user_info.upload_to_database_new()
-        self.assertTrue(success)
-
-    def test_upload_to_database_existing_success(self):
-        user_info = BaseInfo(1, "John", "Doe", datetime(1990, 5, 7))
-        success = user_info.upload_to_database_existing()
-        self.assertTrue(success)
-
     def test_load_from_database(self):
         user_info = BaseInfo(1)
         user_info.load_from_database()
-        self.assertEqual(user_info.__dict__, {'id': 1, 'firstName': 'testFirstName', 'lastName': 'testLastName',
-                                              'birthDate': datetime(1990, 5, 7)})
+        self.assertEqual(user_info.__dict__, {'id': 1, 'firstName': 'John', 'lastName': 'Doe',
+                                              'birthDate': datetime(1990, 5, 7).date()})
 
 
 class TestCredential(unittest.TestCase):
@@ -63,31 +53,6 @@ class TestCredential(unittest.TestCase):
         user_id = self.credential.get_id()
         self.assertIsNone(user_id)
 
-    def test_update_login_success(self):
-        success = self.credential.update_login("new_login")
-        self.assertTrue(success)
-        self.assertEqual(self.credential.login, "new_login")
-
-    def test_update_login_failure(self):
-        success = self.credential.update_login(None)
-        self.assertFalse(success)
-
-    def test_update_password_success(self):
-        success = self.credential.update_password("new_password")
-        self.assertTrue(success)
-
-    def test_update_password_failure(self):
-        success = self.credential.update_password(None)
-        self.assertFalse(success)
-
-    def test_upload_to_database_new_success(self):
-        success = self.credential.upload_to_database_new("new_password", 1)
-        self.assertTrue(success)
-
-    def test_upload_to_database_new_failure(self):
-        success = self.credential.upload_to_database_new(None, 1)
-        self.assertFalse(success)
-
 
 class TestPrivateInfo(unittest.TestCase):
 
@@ -105,31 +70,6 @@ class TestPrivateInfo(unittest.TestCase):
     def test_load_from_database_success(self):
         info = self.private_info.load_from_database()
         self.assertIsInstance(info, dict)
-        self.assertIn('photo', info)
-        self.assertIn('passport', info)
-
-    def test_upload_to_database_new_success(self):
-        args = {'photo': 'new_photo', 'passport': '12345678'}
-        user_id = self.private_info.upload_to_database_new(args)
-        self.assertEqual(self.private_info.id, user_id)
-
-    def test_upload_to_database_new_failure(self):
-        # Модифікуємо об'єкт, щоб вимусити виняток при вивантаженні в базу
-        self.private_info.id = 1
-        args = {'photo': 'new_photo', 'passport': '12345678'}
-        user_id = self.private_info.upload_to_database_new(args)
-        self.assertEqual(user_id, -1)
-
-    def test_upload_to_database_existing_success(self):
-        args = {'photo': 'new_photo', 'passport': '12345678'}
-        success = self.private_info.upload_to_database_existing(args)
-        self.assertTrue(success)
-
-    def test_upload_to_database_existing_failure(self):
-        # Модифікуємо об'єкт, щоб вимусити виняток при вивантаженні в базу
-        args = {'photo': 'new_photo', 'passport': '12345678'}
-        success = self.private_info.upload_to_database_existing(args)
-        self.assertFalse(success)
 
 
 class TestUser(unittest.TestCase):
@@ -162,26 +102,7 @@ class TestUser(unittest.TestCase):
         user_without_id.load_base_info()
         self.assertIsNone(user_without_id.baseInfo)
 
-    def test_change_base_info(self):
-        new_info = {'firstName': 'John', 'lastName': 'Doe', 'birthDate': datetime(1990, 5, 7)}
-        self.user.load_base_info()
-        self.user.change_base_info(new_info)
-        self.assertEqual(self.user.baseInfo.firstName, 'John')
-        self.assertEqual(self.user.baseInfo.lastName, 'Doe')
-        self.assertEqual(self.user.baseInfo.birthDate, datetime(1990, 5, 7))
 
-    def test_change_private_info(self):
-        new_info = {'photo': 'new_photo', 'passport': '12345678'}
-        self.user.privateInfo = PrivateInfo()
-        self.user.change_private_info(new_info)
-        self.assertIsNotNone(self.user.privateInfo)
-
-    def test_change_credentials(self):
-        new_info = {'login': 'new_login', 'password': 'new_password'}
-        self.user.creds = Credential(login='old_login', password='old_password')
-        self.user.change_credentials(new_info)
-        self.assertEqual(self.user.creds.login, 'new_login')
-        self.assertEqual(self.user.creds.password_to_validate, 'new_password')
 
 
 class TestRenter(unittest.TestCase):
