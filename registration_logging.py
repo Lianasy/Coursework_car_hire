@@ -8,6 +8,7 @@ from config import DEFAULT_COLORS, BUTTON_CONFIG  # Import default colors and bu
 from Users import LogIn, Registration
 import Users
 import Controller
+from Connect import connection
 
 
 class LoggingInterface:
@@ -73,6 +74,46 @@ class LoggingInterface:
         cred18 = Users.Credential("Bill", "Shief")
         cred18.upload_to_database_new("Shief", 18)
 
+        db = connection.couchdb_connection['car_hire']
+        for i in range(10):
+            existing_document = db.get(f'car{i+1}')
+            if existing_document:
+                pass
+            else:
+                new_document = {
+                    "_id": f'car{i+1}',
+                    "carId": i+1,
+                      "documents": [
+                        {
+                          "documentId": f'AgreementCar{i+1}',
+                          "documentLocation": f'AgrDocumentCar{i+1}.docx'
+                        },
+                        {
+                          "documentId": f'StatusСardCar{i+1}',
+                          "documentLocation": f'StatusDocumentCar{i+1}.docx'
+                        },
+                        {
+                          "documentId": f'CertifOfRegistrCar{i+1}',
+                          "documentLocation": f'CertDocumentCar{i+1}.docx'
+                        }
+                      ]
+                }
+                db.save(new_document)
+                print("Document added to CouchDB successfully.")
+
+        for i in range(2):
+            existing_document = db.get(f'userId{i + 1}')
+            if existing_document:
+                pass
+            else:
+                new_document = {
+                    "_id": f'userId{i + 1}',
+                    "userId": i + 1,
+                    "documentName": f'AgreementUs{i+1}',
+                      "documentLocation": f'ArgUs{i+1}.docx'
+                }
+                db.save(new_document)
+                print("Document added to CouchDB successfully.")
 
     def clear_interface(self):
         """

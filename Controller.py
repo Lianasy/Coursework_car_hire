@@ -81,6 +81,10 @@ class Rent:
                 self.rent_id = rent_id
 
                 self.generate_agreement()
+                update_query1 = "UPDATE rent SET shortTermAgreement = %s WHERE rent_id = %s"
+                user_data1 = (self.agreement, self.rent_id)
+                cursor.execute(update_query1, user_data1)
+                connection.mysql_connection.commit()
                 self.generate_agreement_location()
 
                 # Отримуємо існуючий документ в CouchDB
@@ -174,7 +178,7 @@ class Rent:
                 update_query_2 = "UPDATE renter SET canRent = %s WHERE userId = %s"
                 update_query_3 = "UPDATE car SET rentStatus = %s WHERE carId = %s"
                 cursor.execute(update_query_1, (set_finished, self.rent_id))
-                cursor.execute(update_query_2, ('True', self.user_id))
+                cursor.execute(update_query_2, (1, self.user_id))
                 cursor.execute(update_query_3, ('AVAILABLE', self.car_id))
                 connection.mysql_connection.commit()
 
