@@ -567,4 +567,3 @@ class ManagerController:
         except Exception as e:
             print(f'Failed to retrieve expired rents from the database. Error: {e}')
             return []
-
