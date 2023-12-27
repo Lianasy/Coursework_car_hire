@@ -6,6 +6,10 @@ from Controller import Rent
 class EmployeeInterface:
     # Initializing attributes and setting up the interface
     def __init__(self, root, controller):
+        self.frame_contracts = None
+        self.selected_contract = tk.IntVar(value=0)
+        self.selected_rental_type = None
+        self.selected_car_type = None
         self.frame_drivers = None
         self.frame_cars = None
         self.controller = controller
@@ -81,7 +85,7 @@ class EmployeeInterface:
         frame_spacing = 10  # Проміжок між фреймами
 
         frame_width = (
-                                  self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 50
+                                  self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 150
         frame_height = self.screen_height - frame_pady_top
 
         self.fill_drivers_top_frame()
@@ -98,13 +102,13 @@ class EmployeeInterface:
         label_drivers.grid(row=1, column=0, padx=(frame_padx_left, frame_padx_right), pady=(20, frame_pady_bottom // 2))
 
         self.frame_drivers = tk.Frame(self.inner_frame, width=frame_width, height=frame_height, bg="white")
-        self.frame_drivers.grid(row=2, column=0, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
+        self.frame_drivers.grid(row=2, column=0, padx=(frame_padx_left + 90, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
         self.drivers_table(users)
 
         label_cars = tk.Label(self.inner_frame, text="Cars", font=("Arial", 12))
         label_cars.grid(row=1, column=1, padx=(frame_padx_left, frame_padx_right), pady=(20, frame_pady_bottom // 2))
 
-        self.frame_cars = tk.Frame(self.inner_frame, width=frame_width, height=frame_height, bg="white")
+        self.frame_cars = tk.Frame(self.inner_frame, width=frame_width + 50, height=frame_height, bg="white")
         self.frame_cars.grid(row=2, column=1, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom))
         self.cars_table(cars)
 
@@ -112,31 +116,37 @@ class EmployeeInterface:
         label_contracts.grid(row=1, column=2, padx=(frame_padx_left, frame_padx_right),
                              pady=(20, frame_pady_bottom // 2))
 
-        frame_contracts = tk.Frame(self.inner_frame, width=frame_width + 100, height=frame_height, bg="white")
-        frame_contracts.grid(row=2, column=2, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
-        self.contracts_table(frame_contracts, expired_rents)
+        self.frame_contracts = tk.Frame(self.inner_frame, width=frame_width + 200, height=frame_height, bg="white")
+        self.frame_contracts.grid(row=2, column=2, padx=(frame_padx_left, frame_padx_right), pady=(10, frame_pady_bottom), sticky="n")
+        self.contracts_table(self.frame_contracts, expired_rents)
 
         # Додано сітки грід в кожний фрейм
         self.frame_drivers.grid_propagate(False)
         self.frame_cars.grid_propagate(False)
-        frame_contracts.grid_propagate(False)
+        self.frame_contracts.grid_propagate(False)
 
     def solve_problems(self):
         """
                 Placeholder method for solving problems.
                 """
-        pass
+        expired_rents = self.controller.get_expired_rents()
+        rent = expired_rents[self.selected_contract.get()]
+        self.controller.end_rent(rent[2])
+        for widget in self.frame_contracts.winfo_children():
+            widget.destroy()
+        expired_rents = self.controller.get_expired_rents()
+        self.contracts_table(self.frame_contracts, expired_rents)
 
     def fill_drivers_top_frame(self):
         """
                 Fills the top frame related to drivers with filter options.
                 """
-        frame_padx_left = 10
+        frame_padx_left = 100
         frame_padx_right = 30
         frame_pady_bottom = 20
         frame_spacing = 10  # Проміжок між фреймами
         frame_width = (
-                                  self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 50
+                                  self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 150
         frame_drivers_top = tk.Frame(self.inner_frame, width=frame_width, height=200, bg="white")
         frame_drivers_top.grid(row=0, column=0, sticky="nsew", padx=(frame_padx_left, frame_padx_right),
                                pady=(50, 0))
@@ -159,16 +169,13 @@ class EmployeeInterface:
             self.optionsRentability_vars.append(varRentability)
 
     def fill_cars_top_frame(self):
-        """
-                Fills the top frame related to cars with filter options.
-                """
         frame_padx_left = 10
         frame_padx_right = 30
         frame_pady_top = 300
         frame_pady_bottom = 20
-        frame_spacing = 10  # Проміжок між фреймами
+        frame_spacing = 10
         frame_width = (
-                              self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 50
+            self.screen_width - 2 * frame_padx_left - 2 * frame_padx_right - 2 * frame_spacing - frame_pady_bottom) // 3 - 150
         frame_height = self.screen_height - frame_pady_top
         frame_cars_top = tk.Frame(self.inner_frame, width=frame_width, height=200, bg="white")
         frame_cars_top.grid(row=0, column=1, sticky="nsew", padx=(frame_padx_left, frame_padx_right),
@@ -183,29 +190,46 @@ class EmployeeInterface:
         labeltemp.grid(row=0, column=1, padx=5, pady=5)
 
         self.optionsRental = ["IN_RENT", "AVAILABLE", "SERVICED"]
-        self.optionsRental_vars = []  # Додано ініціалізацію змінної self.optionsRental_vars
+        self.selected_rental_type = tk.StringVar(value="AVAILABLE")  # Variable to store the selected car type
 
-        for i, option in enumerate(self.optionsRental, start=1):
-            var1 = tk.IntVar(value=0)
-            checkbox = tk.Checkbutton(frame_cars_top, text=option, font=("Arial", 10), bg="white", fg="black",
-                                      variable=var1)
-            checkbox.grid(row=i, column=2, padx=5, pady=5, sticky="w")
-            self.optionsRental_vars.append(var1)  # Додано до списку self.optionsRental_vars
+        tk.Radiobutton(frame_cars_top, text="IN_RENT", variable=self.selected_rental_type, value="IN_RENT").grid(
+            row=1,
+            column=2,
+            padx=5, pady=5, sticky="w")
+        tk.Radiobutton(frame_cars_top, text="AVAILABLE", variable=self.selected_rental_type, value="AVAILABLE").grid(row=2,
+                                                                                                              column=2,
+                                                                                                              padx=5,
+                                                                                                              pady=5,
+                                                                                                              sticky="w")
+        tk.Radiobutton(frame_cars_top, text="SERVICED", variable=self.selected_rental_type, value="SERVICED").grid(row=3,
+                                                                                                              column=2,
+                                                                                                              padx=5,
+                                                                                                              pady=5,
+                                                                                                              sticky="w")
 
-        label_type = tk.Label(frame_cars_top, text="Type:", font=("Arial", 10), bg="white", fg="black")
-        label_type.grid(row=0, column=4, padx=5, pady=5)
-        labeltemp = tk.Label(frame_cars_top, text="     ", font=("Arial", 10), bg="white", fg="black")
-        labeltemp.grid(row=0, column=3, padx=5, pady=5)
+        self.optionsType = ["STANDARD", "PREMIUM", "ECONOMY", "TRUCK"]
 
-        self.optionsType = ["STANDART", "PREMIUM", "ECONOMY", "TRUCK"]
-        self.optionsType_vars = []  # Додано ініціалізацію змінної self.optionsType_vars
+        self.selected_car_type = tk.StringVar(value="STANDART")  # Variable to store the selected car type
 
-        for i, option in enumerate(self.optionsType, start=1):
-            var2 = tk.IntVar(value=0)
-            checkbox = tk.Checkbutton(frame_cars_top, text=option, font=("Arial", 10), bg="white", fg="black",
-                                      variable=var2)
-            checkbox.grid(row=i, column=4, padx=5, pady=5, sticky="w")
-            self.optionsType_vars.append(var2)
+        tk.Radiobutton(frame_cars_top, text="STANDART", variable=self.selected_car_type, value="STANDART").grid(
+            row=1,
+            column=4,
+            padx=5, pady=5, sticky="w")
+        tk.Radiobutton(frame_cars_top, text="PREMIUM", variable=self.selected_car_type, value="PREMIUM").grid(row=2,
+                                                                                                                 column=4,
+                                                                                                                 padx=5,
+                                                                                                                 pady=5,
+                                                                                                                 sticky="w")
+        tk.Radiobutton(frame_cars_top, text="ECONOMY", variable=self.selected_car_type, value="ECONOMY").grid(row=3,
+                                                                                                                 column=4,
+                                                                                                                 padx=5,
+                                                                                                                 pady=5,
+                                                                                                                 sticky="w")
+        tk.Radiobutton(frame_cars_top, text="TRUCK", variable=self.selected_car_type, value="TRUCK").grid(row = 4,
+                                                                                                             column=4,
+                                                                                                             padx=5,
+                                                                                                             pady=5,
+                                                                                                             sticky="w")
 
     def drivers_table(self, users):
         """
@@ -214,7 +238,7 @@ class EmployeeInterface:
                 Parameters:
                     users (list[User]): List of User objects representing drivers.
                 """
-        labels_drivers = ["First name", "Last name", "License", "Rentability"]
+        labels_drivers = ["First name", "Last name", "Rentability"]
         # Очистка фрейму перед додаванням нових елементів
         for widget in self.frame_drivers.winfo_children():
             widget.destroy()
@@ -271,6 +295,13 @@ class EmployeeInterface:
             for i, info in enumerate(rent_info):
                 label = tk.Label(frame, text=info, font=("Arial", 9), bg="white")
                 label.grid(row=idx, column=i, padx=5, pady=5, sticky="w")
+            tk.Radiobutton(frame, text="", variable=self.selected_contract, value= idx - 1).grid(
+                row=idx,
+                column=len(rent_info),
+                padx=5,
+                pady=5,
+                sticky="w")
+
 
     def filter_drivers(self):
         """
@@ -296,19 +327,8 @@ class EmployeeInterface:
         """
         Filters cars based on selected criteria.
         """
-        self.selected_rental_statuses.clear()
-        self.selected_types.clear()
-        self.selected_rental_statuses = [self.optionsRental[i] for i, val in enumerate(self.optionsRental_vars) if
-                                         val.get()]
-        self.selected_types = [self.optionsType[i] for i, val in enumerate(self.optionsType_vars) if val.get()]
-
-        self.apply_cars_filter()
-
-    def apply_cars_filter(self):
-        """
-        Applies filters to the cars' table.
-        """
-        cars = self.controller.get_filtered_cars(self.selected_rental_statuses, self.selected_types)
+        cars = self.controller.get_filtered_cars(self.selected_rental_type.get(), self.selected_car_type.get())
         self.cars_table(cars)
+
 
 
