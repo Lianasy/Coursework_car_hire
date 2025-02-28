@@ -12,6 +12,6 @@ class Connection:
             print("Fail", e)
 
 
-connection = Connection("178.158.240.188",
-                        "178.158.240.188", "root", "root-pw", "car_hire",
-                        "couchdb", "coconut", "178.158.240.188")
+connection = Connection("***.***.***.***",
+                        "***.***.***.***", "****", "*******", "******",
+                        "******", "*******", "***.***.***.***")
